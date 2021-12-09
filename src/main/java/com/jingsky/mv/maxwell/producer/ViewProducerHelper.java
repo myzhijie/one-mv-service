@@ -1,13 +1,11 @@
 package com.jingsky.mv.maxwell.producer;
 
 import com.jingsky.mv.maxwell.row.RowMap;
-import com.jingsky.mv.mv.View;
-import com.jingsky.mv.mv.ViewCol;
-import com.jingsky.mv.mv.ViewLeftJoin;
-import com.jingsky.mv.service.CommonService;
-import com.jingsky.mv.service.ToDatabaseService;
+import com.jingsky.mv.entity.View;
+import com.jingsky.mv.entity.ViewCol;
+import com.jingsky.mv.entity.ViewLeftJoin;
+import com.jingsky.mv.service.ConfigService;
 import com.jingsky.mv.util.DatabaseService;
-import com.jingsky.mv.util.GetBeanUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
@@ -35,7 +33,7 @@ public class ViewProducerHelper {
     private DatabaseService fromDatabaseService;
     //视图在数据表中配置的Dao
     @Autowired
-    private CommonService commonService;
+    private ConfigService configService;
     //需要进行处理的全量表
     private Map<String, View> bootstrapTableMap = new HashMap<>();
     //表和涉及到视图的对应
@@ -288,7 +286,7 @@ public class ViewProducerHelper {
      * 初始化关于视图的数据
      */
     public void initViewsData() throws SQLException, URISyntaxException {
-        List<View> viewList=commonService.getAllView();
+        List<View> viewList=configService.getAllView();
         for(View view : viewList) {
             initViewData(view);
         }

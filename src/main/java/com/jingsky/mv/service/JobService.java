@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +25,8 @@ public class JobService extends Thread {
     @Autowired
     private GlobalHandler globalHandler;
     @Autowired
+    private ConfigService configService;
+    @Autowired
     private HikariDataSource fromDataSource;
     @Autowired
     private HikariDataSource toDataSource;
@@ -35,6 +38,22 @@ public class JobService extends Thread {
     private boolean terminate = false;
     //mysql clientId
     private String clientId;
+
+    /**
+     * 开始传输
+     * @return
+     */
+    public void startTransfer() throws Exception {
+        //插入bootstrap表
+        configService.insertBootstrapTable();
+        //标记调整为非终止
+        setTerminate(false);
+        //开始任务
+        if (!isAlive()) {
+            setClientId(clientId);
+            start();
+        }
+    }
 
     @Override
     public void run() {
@@ -66,20 +85,22 @@ public class JobService extends Thread {
      * 开始全量数据迁移和数据增量同步
      */
     private void startBootstrapAndConsume() throws Exception {
+        URI fromUri = URI.create(fromDataSource.getJdbcUrl());
+        URI toUri = URI.create(toDataSource.getJdbcUrl());
         //参数列表
         List<String> argsList = new ArrayList<>();
         //maxwell自己的数据库配置
         argsList.add("--user=" + toDataSource.getUsername() + "");
         argsList.add("--password=" + toDataSource.getPassword() + "");
-        argsList.add("--host=" + toDataSource.getJdbcUrl());
-        argsList.add("--port=" + toDataSource.getJdbcUrl());
-        argsList.add("--schema_database=" + toDataSource.getJdbcUrl());
+        argsList.add("--host=" + toUri.getHost());
+        argsList.add("--port=" + toUri.getHost());
+        argsList.add("--schema_database=" + toUri.getScheme());
         //maxwell读取binlog的配置
-        argsList.add("--filter=exclude: *.*,include: " + fromDataSource.getJdbcUrl() + ".*");
+        argsList.add("--filter=exclude: *.*,include: " + fromUri.getScheme() + ".*");
         argsList.add("--replication_user=" + fromDataSource.getUsername() + "");
         argsList.add("--replication_password=" + fromDataSource.getPassword() + "");
-        argsList.add("--replication_host=" + fromDataSource.getJdbcUrl());
-        argsList.add("--replication_port=" + fromDataSource.getJdbcUrl());
+        argsList.add("--replication_host=" + fromUri.getHost());
+        argsList.add("--replication_port=" + fromUri.getPort());
         //设置maxwell作为mysql客户端的唯一值
         argsList.add("--replica_server_id=" + clientId);
         argsList.add("--producer=view");

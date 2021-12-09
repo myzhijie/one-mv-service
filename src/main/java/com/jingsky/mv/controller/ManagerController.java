@@ -1,6 +1,6 @@
 package com.jingsky.mv.controller;
 
-import com.jingsky.mv.service.CommonService;
+import com.jingsky.mv.service.JobService;
 import com.jingsky.mv.util.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/manager")
 public class ManagerController {
     @Autowired
-    private CommonService commonService;
+    private JobService jobService;
 
     /**
      * 终止同步任务
@@ -22,7 +22,7 @@ public class ManagerController {
      */
     @RequestMapping("terminate-transfer")
     public Response terminateTransfer() {
-        commonService.terminateTransfer();
+        jobService.setTerminate(true);
         return new Response();
     }
 
@@ -33,7 +33,7 @@ public class ManagerController {
      */
     @RequestMapping("start-transfer")
     public Response startTransfer() throws Exception {
-        commonService.startTransfer();
+        jobService.startTransfer();
         return new Response();
     }
 
@@ -44,18 +44,7 @@ public class ManagerController {
      */
     @RequestMapping("resume-transfer")
     public Response resumeTransfer() {
-        commonService.resumeTransfer();
-        return new Response();
-    }
-
-    /**
-     * 重置任务
-     *
-     * @return Response
-     */
-    @RequestMapping("reset-transfer")
-    public Response resetTransfer() {
-        commonService.resetTransfer();
+        jobService.setTerminate(false);
         return new Response();
     }
 }

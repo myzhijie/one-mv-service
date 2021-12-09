@@ -1,14 +1,13 @@
-package com.jingsky.mv.mv;
+package com.jingsky.mv.entity;
 
 import com.alibaba.fastjson.JSON;
-import com.jingsky.mv.entity.TableView;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 /**
- * 视图类
+ * 视图类,非数据表
  */
 @Data
 @NoArgsConstructor

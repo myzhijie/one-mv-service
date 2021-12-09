@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "spring.hikari")
 @Data
-public class DBProperties {
+public class DatasourceConfig {
     private HikariDataSource from;
     private HikariDataSource to;
 

@@ -4,9 +4,9 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
--- Table structure for t_view_table_bootstrap
+-- Table structure for t_mv_table_bootstrap
 -- ----------------------------
-CREATE TABLE `t_view_table_bootstrap` (
+CREATE TABLE `t_mv_table_bootstrap` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'DTS数据实例表',
   `source_table` varchar(64) NOT NULL COMMENT '源表名',
   `repeat_order` int(11) NOT NULL COMMENT '表需要多次bootstrap时的顺序',
@@ -23,9 +23,9 @@ CREATE TABLE `t_view_table_bootstrap` (
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
--- Table structure for t_view_well_bootstrap
+-- Table structure for t_mv_well_bootstrap
 -- ----------------------------
-CREATE TABLE `t_view_well_bootstrap` (
+CREATE TABLE `t_mv_well_bootstrap` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `database_name` varchar(255) CHARACTER SET utf8 NOT NULL,
   `table_name` varchar(255) CHARACTER SET utf8 NOT NULL,
@@ -47,9 +47,9 @@ CREATE TABLE `t_view_well_bootstrap` (
 ) ENGINE=InnoDB AUTO_INCREMENT=411 DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
--- Table structure for t_view_well_columns
+-- Table structure for t_mv_well_columns
 -- ----------------------------
-CREATE TABLE `t_view_well_columns` (
+CREATE TABLE `t_mv_well_columns` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `schema_id` int(10) unsigned DEFAULT NULL,
   `table_id` int(10) unsigned DEFAULT NULL,
@@ -65,9 +65,9 @@ CREATE TABLE `t_view_well_columns` (
 ) ENGINE=InnoDB AUTO_INCREMENT=782868 DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
--- Table structure for t_view_well_databases
+-- Table structure for t_mv_well_databases
 -- ----------------------------
-CREATE TABLE `t_view_well_databases` (
+CREATE TABLE `t_mv_well_databases` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `schema_id` int(10) unsigned DEFAULT NULL,
   `name` varchar(255) CHARACTER SET utf8 DEFAULT NULL,
@@ -77,9 +77,9 @@ CREATE TABLE `t_view_well_databases` (
 ) ENGINE=InnoDB AUTO_INCREMENT=548 DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
--- Table structure for t_view_well_heartbeats
+-- Table structure for t_mv_well_heartbeats
 -- ----------------------------
-CREATE TABLE `t_view_well_heartbeats` (
+CREATE TABLE `t_mv_well_heartbeats` (
   `server_id` int(10) unsigned NOT NULL,
   `client_id` varchar(255) CHARACTER SET latin1 NOT NULL DEFAULT 'maxwell',
   `heartbeat` bigint(20) NOT NULL,
@@ -87,9 +87,9 @@ CREATE TABLE `t_view_well_heartbeats` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
--- Table structure for t_view_well_positions
+-- Table structure for t_mv_well_positions
 -- ----------------------------
-CREATE TABLE `t_view_well_positions` (
+CREATE TABLE `t_mv_well_positions` (
   `server_id` int(10) unsigned NOT NULL,
   `binlog_file` varchar(255) DEFAULT NULL,
   `binlog_position` int(10) unsigned DEFAULT NULL,
@@ -101,9 +101,9 @@ CREATE TABLE `t_view_well_positions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
--- Table structure for t_view_well_schemas
+-- Table structure for t_mv_well_schemas
 -- ----------------------------
-CREATE TABLE `t_view_well_schemas` (
+CREATE TABLE `t_mv_well_schemas` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `binlog_file` varchar(255) DEFAULT NULL,
   `binlog_position` int(10) unsigned DEFAULT NULL,
@@ -121,9 +121,9 @@ CREATE TABLE `t_view_well_schemas` (
 ) ENGINE=InnoDB AUTO_INCREMENT=137 DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
--- Table structure for t_view_well_tables
+-- Table structure for t_mv_well_tables
 -- ----------------------------
-CREATE TABLE `t_view_well_tables` (
+CREATE TABLE `t_mv_well_tables` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `schema_id` int(10) unsigned DEFAULT NULL,
   `database_id` int(10) unsigned DEFAULT NULL,

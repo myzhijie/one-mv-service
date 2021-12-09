@@ -1,10 +1,10 @@
-package com.jingsky.mv.mv;
+package com.jingsky.mv.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 视图类中left join的表
+ * 视图类中left join的表,非数据表
  */
 @Data
 @NoArgsConstructor
