@@ -1,11 +1,12 @@
 package com.jingsky.mv.service;
 
-import com.jingsky.mv.config.FromDatasourceConfig;
+import com.jingsky.mv.config.TablePrefixConfig;
 import com.jingsky.mv.entity.TableView;
 import com.jingsky.mv.entity.WellBootstrap;
 import com.jingsky.mv.mv.View;
 import com.jingsky.mv.util.AsciiUtil;
 import com.jingsky.mv.util.DatabaseService;
+import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,8 +25,6 @@ import java.util.List;
 @Slf4j
 public class CommonService {
     @Autowired
-    private FromDatasourceConfig fromDatasourceConfig;
-    @Autowired
     private DatabaseService toDatabaseService;
     @Autowired
     private ConfigDao configDao;
@@ -35,8 +34,6 @@ public class CommonService {
     private List<View> viewList;
     //mysql client ID
     private String clientId;
-    @Value("${prefix}")
-    private String prefix;
 
     public CommonService() throws SQLException, URISyntaxException {
     }
@@ -44,7 +41,7 @@ public class CommonService {
     @PostConstruct
     public void init() {
         //计算出clientId
-        clientId = AsciiUtil.sumStrAscii(prefix) + "";
+        clientId = AsciiUtil.sumStrAscii(TablePrefixConfig.getTablePrefix()) + "";
     }
 
     /**
@@ -79,7 +76,6 @@ public class CommonService {
         List<View> viewsList = getAllView();
         for(View view : viewsList) {
             WellBootstrap bootstrap = new WellBootstrap();
-            bootstrap.setDatabaseName(fromDatasourceConfig.getDatabase());
             bootstrap.setTableName(view.getMasterTable());
             bootstrap.setRepeatOrder(view.getId());
             bootstrap.setClientId(clientId);

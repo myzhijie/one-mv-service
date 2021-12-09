@@ -42,8 +42,7 @@ public class ConfigDao {
      * @throws URISyntaxException
      */
     public List<TableView> findAllView() throws SQLException, URISyntaxException {
-        String prefix=toDatabaseService.getDatasourceConfig().getPrefix();
-        List<TableView> tableViewList=toDatabaseService.query("select * from t_"+prefix+"_table_view", TableView.class);
+        List<TableView> tableViewList=toDatabaseService.query("select * from t_table_view", TableView.class);
         return tableViewList;
     }
 

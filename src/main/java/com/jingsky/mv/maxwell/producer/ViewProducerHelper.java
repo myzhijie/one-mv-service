@@ -13,6 +13,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.net.URISyntaxException;
@@ -27,11 +28,14 @@ import java.util.*;
 @Service
 public class ViewProducerHelper {
     //目标数据源服务
-    private DatabaseService toDatabaseService = (ToDatabaseService) GetBeanUtil.getContext().getBean("toDatabaseService");
+    @Autowired
+    private DatabaseService toDatabaseService;
     //源数据源服务
-    private DatabaseService fromDatabaseService = (ToDatabaseService) GetBeanUtil.getContext().getBean("fromDatabaseService");
+    @Autowired
+    private DatabaseService fromDatabaseService;
     //视图在数据表中配置的Dao
-    private CommonService commonService = (CommonService) GetBeanUtil.getContext().getBean("commonService");
+    @Autowired
+    private CommonService commonService;
     //需要进行处理的全量表
     private Map<String, View> bootstrapTableMap = new HashMap<>();
     //表和涉及到视图的对应

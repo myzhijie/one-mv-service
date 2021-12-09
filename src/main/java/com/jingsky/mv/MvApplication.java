@@ -8,8 +8,7 @@ import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 
 @EnableDiscoveryClient
 @EnableFeignClients
-@SpringBootApplication(scanBasePackages = "com.gymbomate.*")
-@EnableCircuitBreaker
+@SpringBootApplication(scanBasePackages = "com.jingsky.mv.*")
 public class MvApplication {
     public static void main(String[] args) {
         SpringApplication.run(MvApplication.class,args);

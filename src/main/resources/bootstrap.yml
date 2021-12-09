@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: one-mv-service
+  cloud:
+    config:
+      username: user
+      password: onePassword
+      fail-fast: true
+      label: master
+      uri: http://760.jingsky.com:9001

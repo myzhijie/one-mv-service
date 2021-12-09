@@ -1,10 +1,9 @@
 package com.jingsky.mv.service;
 
-import com.jingsky.mv.util.IDatasourceConfig;
 import com.jingsky.mv.util.DatabaseService;
+import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 /**
@@ -14,11 +13,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class ToDatabaseService extends DatabaseService {
     @Autowired
-    @Qualifier("toDatasourceConfig")
-    private IDatasourceConfig datasourceConfig;
+    private HikariDataSource toDataSource;
+
 
     @Override
-    public IDatasourceConfig getDatasourceConfig() {
-        return datasourceConfig;
+    public HikariDataSource getDatasource() {
+        return toDataSource;
     }
 }
