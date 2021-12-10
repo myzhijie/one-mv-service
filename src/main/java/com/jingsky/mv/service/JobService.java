@@ -3,6 +3,7 @@ package com.jingsky.mv.service;
 import com.jingsky.mv.config.GlobalHandler;
 import com.jingsky.mv.maxwell.Maxwell;
 import com.jingsky.mv.maxwell.MaxwellConfig;
+import com.jingsky.mv.util.exception.BootstrapException;
 import com.jingsky.mv.util.exception.IncrementException;
 import com.jingsky.util.common.CollectionUtil;
 import com.zaxxer.hikari.HikariDataSource;
@@ -65,7 +66,9 @@ public class JobService extends Thread {
                     startBootstrapAndConsume();
                 }
             } catch (Exception e) {
-                if(e instanceof IncrementException){
+                if(e instanceof BootstrapException){
+                    globalHandler.handleBootstrapException((BootstrapException)e);
+                }else if(e instanceof IncrementException){
                     globalHandler.handleIncrementException((IncrementException)e);
                 }else{
                     globalHandler.handleOtherException(e);
@@ -85,8 +88,8 @@ public class JobService extends Thread {
      * 开始全量数据迁移和数据增量同步
      */
     private void startBootstrapAndConsume() throws Exception {
-        URI fromUri = URI.create(fromDataSource.getJdbcUrl());
-        URI toUri = URI.create(toDataSource.getJdbcUrl());
+        URI fromUri = URI.create(fromDataSource.getJdbcUrl().substring(5));
+        URI toUri = URI.create(toDataSource.getJdbcUrl().substring(5));
         //参数列表
         List<String> argsList = new ArrayList<>();
         //maxwell自己的数据库配置
@@ -94,9 +97,9 @@ public class JobService extends Thread {
         argsList.add("--password=" + toDataSource.getPassword() + "");
         argsList.add("--host=" + toUri.getHost());
         argsList.add("--port=" + toUri.getHost());
-        argsList.add("--schema_database=" + toUri.getScheme());
+        argsList.add("--schema_database=" + toUri.getPath().substring(1));
         //maxwell读取binlog的配置
-        argsList.add("--filter=exclude: *.*,include: " + fromUri.getScheme() + ".*");
+        argsList.add("--filter=exclude: *.*,include: " + fromUri.getPath().substring(1) + ".*");
         argsList.add("--replication_user=" + fromDataSource.getUsername() + "");
         argsList.add("--replication_password=" + fromDataSource.getPassword() + "");
         argsList.add("--replication_host=" + fromUri.getHost());

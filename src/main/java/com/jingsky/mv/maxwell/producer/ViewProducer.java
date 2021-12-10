@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.jingsky.mv.maxwell.MaxwellContext;
 import com.jingsky.mv.maxwell.row.RowMap;
-import com.jingsky.mv.entity.View;
+import com.jingsky.mv.vo.View;
 import com.jingsky.mv.util.GetBeanUtil;
 import com.jingsky.mv.util.exception.BootstrapException;
 import com.jingsky.mv.util.exception.IncrementException;

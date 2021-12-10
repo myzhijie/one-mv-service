@@ -1,4 +1,4 @@
-package com.jingsky.mv.entity;
+package com.jingsky.mv.vo;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

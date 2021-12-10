@@ -1,8 +1,9 @@
-package com.jingsky.mv.entity;
+package com.jingsky.mv.vo;
 
 import com.alibaba.fastjson.JSON;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class View {
         this.masterWhereSql=tableView.getWhereSql();
 
         this.viewColList =JSON.parseArray(tableView.getColsJson(), ViewCol.class);
-        this.viewLeftJoinList=JSON.parseArray(tableView.getColsJson(),ViewLeftJoin.class);
+        this.viewLeftJoinList=JSON.parseArray(tableView.getLeftJoinJson(),ViewLeftJoin.class);
     }
 
     public String toSql(){
@@ -54,14 +55,16 @@ public class View {
         sb.append("from "+this.masterTable);
         sb.append("\n");
         //拼接left join
-        String leftTable=this.masterTable;
         for(ViewLeftJoin leftJoin : this.viewLeftJoinList){
             sb.append("left join "+leftJoin.getTable());
-            sb.append(" on "+leftTable+"."+leftJoin.getJoinLeftCol()+"="+leftJoin.getTable()+"."+leftJoin.getJoinCol());
+            sb.append(" on "+masterTable+"."+leftJoin.getJoinLeftCol()+"="+leftJoin.getTable()+"."+leftJoin.getJoinCol());
             sb.append("\n");
-            leftTable=leftJoin.getTable();
         }
-        sb.append("where "+current+"="+current+" and (" + this.masterWhereSql+")\n");
+        sb.append("where "+current+"="+current);
+        if(StringUtils.isNotBlank(masterWhereSql)){
+            sb.append(" and (" +masterWhereSql+")");
+        }
+        sb.append("\n");
         sb.append("order by "+this.masterTable+"."+this.masterTablePk);
         sql=sb.toString();
         return sql;

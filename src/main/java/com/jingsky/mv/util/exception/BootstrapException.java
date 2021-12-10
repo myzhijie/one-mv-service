@@ -1,7 +1,7 @@
 package com.jingsky.mv.util.exception;
 
 import com.jingsky.mv.maxwell.row.RowMap;
-import com.jingsky.mv.entity.View;
+import com.jingsky.mv.vo.View;
 import lombok.Data;
 
 /**

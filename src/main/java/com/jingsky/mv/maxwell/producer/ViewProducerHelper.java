@@ -1,9 +1,9 @@
 package com.jingsky.mv.maxwell.producer;
 
 import com.jingsky.mv.maxwell.row.RowMap;
-import com.jingsky.mv.entity.View;
-import com.jingsky.mv.entity.ViewCol;
-import com.jingsky.mv.entity.ViewLeftJoin;
+import com.jingsky.mv.vo.View;
+import com.jingsky.mv.vo.ViewCol;
+import com.jingsky.mv.vo.ViewLeftJoin;
 import com.jingsky.mv.service.ConfigService;
 import com.jingsky.mv.util.DatabaseService;
 import lombok.extern.slf4j.Slf4j;

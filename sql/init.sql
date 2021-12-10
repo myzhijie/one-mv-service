@@ -4,22 +4,22 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
--- Table structure for t_mv_table_bootstrap
+-- Table structure for t_mv_table_view
 -- ----------------------------
-CREATE TABLE `t_mv_table_bootstrap` (
-  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'DTS数据实例表',
-  `source_table` varchar(64) NOT NULL COMMENT '源表名',
-  `repeat_order` int(11) NOT NULL COMMENT '表需要多次bootstrap时的顺序',
-  `custom_sql` text NOT NULL COMMENT '自定义bootstrap sql',
-  `batch_num` int(11) NOT NULL default 100 COMMENT 'bootstrap时多少条回调一次',
-  `handler_bean_name` varchar(128) NOT NULL COMMENT '处理类Bean名称',
-  `note` varchar(256) DEFAULT NULL COMMENT '一个帮助你放附加信息的字段',
+CREATE TABLE `t_mv_table_view` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '视图表id',
+  `mv_name` varchar(64) NOT NULL COMMENT '视图名称',
+  `cols_json` varchar(512) NOT NULL COMMENT '列的对应json,{''目标列名'':''源表名.字段名''}',
+  `master_table` varchar(64) NOT NULL COMMENT '主表表名',
+  `master_table_pk` varchar(32) NOT NULL COMMENT '主表的主键，必须在目标列中存在映射',
+  `where_sql` varchar(128) NOT NULL COMMENT '主表where语句',
+  `leftJoinJson` text DEFAULT NULL COMMENT 'left join部分,{[table:''table1'',on:{left:''a字段'',right:''b字段''}}],}',
   `create_by` varchar(45) NOT NULL,
   `create_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_update_by` varchar(45) NOT NULL,
   `last_update_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `source_table` (`source_table`,`repeat_order`)
+  UNIQUE KEY `mv_name_uni` (`mv_name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------

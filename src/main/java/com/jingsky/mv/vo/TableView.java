@@ -1,4 +1,4 @@
-package com.jingsky.mv.entity;
+package com.jingsky.mv.vo;
 
 import lombok.Data;
 import java.io.Serializable;
@@ -22,10 +22,8 @@ public class TableView implements Serializable {
     private String masterTablePk;
     //主表where语句
     private String whereSql;
-    //left join部分,{[table:'table1',where:'where sql',on:{left:'a字段',right:'b字段'}}],}
+    //left join部分,{[table:'table1',on:{left:'a字段',right:'b字段'}}],}
     private String leftJoinJson;
-    //一个帮助你放附加信息的字段
-    private String note;
 
     private String createBy;
     private Date createDate;
