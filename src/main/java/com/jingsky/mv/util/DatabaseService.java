@@ -1,6 +1,7 @@
 package com.jingsky.mv.util;
 
 import com.zaxxer.hikari.HikariDataSource;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.BasicRowProcessor;
 import org.apache.commons.dbutils.GenerousBeanProcessor;
@@ -8,6 +9,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -18,7 +20,23 @@ import java.util.Map;
  * 数据库服务基础抽象类
  */
 @Slf4j
+@Getter
 abstract public class DatabaseService {
+    private String username;
+    private String password;
+    private String host;
+    private Integer port;
+    private String database;
+
+    public DatabaseService(){
+        URI uri = URI.create(getDatasource().getJdbcUrl().substring(5));
+        this.host=uri.getHost();
+        this.port=uri.getPort();
+        this.database=uri.getPath().substring(1);
+        this.username=getDatasource().getUsername();
+        this.password=getDatasource().getPassword();
+    }
+
 
     /**
      * 返回一个Hikari数据源

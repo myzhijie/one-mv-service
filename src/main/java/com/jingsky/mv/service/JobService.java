@@ -28,9 +28,9 @@ public class JobService extends Thread {
     @Autowired
     private ConfigService configService;
     @Autowired
-    private HikariDataSource fromDataSource;
+    private FromDatabaseService fromDatabaseService;
     @Autowired
-    private HikariDataSource toDataSource;
+    private ToDatabaseService toDatabaseService;
     //maxwell实例
     private Maxwell maxwell;
     //循环周期 秒
@@ -88,22 +88,20 @@ public class JobService extends Thread {
      * 开始全量数据迁移和数据增量同步
      */
     private void startBootstrapAndConsume() throws Exception {
-        URI fromUri = URI.create(fromDataSource.getJdbcUrl().substring(5));
-        URI toUri = URI.create(toDataSource.getJdbcUrl().substring(5));
         //参数列表
         List<String> argsList = new ArrayList<>();
         //maxwell自己的数据库配置
-        argsList.add("--user=" + toDataSource.getUsername() + "");
-        argsList.add("--password=" + toDataSource.getPassword() + "");
-        argsList.add("--host=" + toUri.getHost());
-        argsList.add("--port=" + toUri.getHost());
-        argsList.add("--schema_database=" + toUri.getPath().substring(1));
+        argsList.add("--user=" + toDatabaseService.getUsername() + "");
+        argsList.add("--password=" + toDatabaseService.getPassword() + "");
+        argsList.add("--host=" + toDatabaseService.getHost());
+        argsList.add("--port=" + toDatabaseService.getPort());
+        argsList.add("--schema_database=" + toDatabaseService.getHost());
         //maxwell读取binlog的配置
-        argsList.add("--filter=exclude: *.*,include: " + fromUri.getPath().substring(1) + ".*");
-        argsList.add("--replication_user=" + fromDataSource.getUsername() + "");
-        argsList.add("--replication_password=" + fromDataSource.getPassword() + "");
-        argsList.add("--replication_host=" + fromUri.getHost());
-        argsList.add("--replication_port=" + fromUri.getPort());
+        argsList.add("--filter=exclude: *.*,include: " + fromDatabaseService.getHost() + ".*");
+        argsList.add("--replication_user=" + fromDatabaseService.getUsername() + "");
+        argsList.add("--replication_password=" + fromDatabaseService.getPassword() + "");
+        argsList.add("--replication_host=" + fromDatabaseService.getHost());
+        argsList.add("--replication_port=" + fromDatabaseService.getPort());
         //设置maxwell作为mysql客户端的唯一值
         argsList.add("--replica_server_id=" + clientId);
         argsList.add("--producer=view");

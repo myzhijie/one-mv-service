@@ -29,7 +29,7 @@ public class ConfigService {
     @Qualifier("toDatabaseService")
     private DatabaseService toDatabaseService;
     @Autowired
-    private HikariDataSource fromDataSource;
+    private FromDatabaseService fromDatabaseService;
     //mysql client ID
     private String clientId = AsciiUtil.sumStrAscii(TablePrefixConfig.getTablePrefix()) + "";
     //所有视图列表
@@ -47,14 +47,13 @@ public class ConfigService {
             //从bootstrap表中删除此数据
             deleteById(getRealTableName("well_bootstrap"), map.get("id"));
         }
-        //获取数据库名称
-        URI fromUri = URI.create(fromDataSource.getJdbcUrl().substring(5));
+
         //将不存在的表循环插入到bootstrap表中
         List<View> viewsList = getAllView();
         for (View view : viewsList) {
             StringBuffer insertSb = new StringBuffer("insert into " + getRealTableName("well_bootstrap"));
             insertSb.append("(`id`,`table_name`,`repeat_order`,`client_id`,`custom_sql`,`batch_num`,`database_name`)values (?,?,?,?,?,?,?)");
-            toDatabaseService.execute(insertSb.toString(), view.getId(), view.getMasterTable(), view.getId(), clientId, view.toSql(), 1000, fromUri.getPath().substring(1));
+            toDatabaseService.execute(insertSb.toString(), view.getId(), view.getMasterTable(), view.getId(), clientId, view.toSql(), 1000, fromDatabaseService.getDatabase());
         }
     }
 
