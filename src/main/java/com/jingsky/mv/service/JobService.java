@@ -1,18 +1,18 @@
 package com.jingsky.mv.service;
 
 import com.jingsky.mv.config.GlobalHandler;
+import com.jingsky.mv.config.TablePrefixConfig;
 import com.jingsky.mv.maxwell.Maxwell;
 import com.jingsky.mv.maxwell.MaxwellConfig;
+import com.jingsky.mv.util.DatabaseService;
 import com.jingsky.mv.util.exception.BootstrapException;
 import com.jingsky.mv.util.exception.IncrementException;
 import com.jingsky.util.common.CollectionUtil;
-import com.zaxxer.hikari.HikariDataSource;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,17 +28,15 @@ public class JobService extends Thread {
     @Autowired
     private ConfigService configService;
     @Autowired
-    private FromDatabaseService fromDatabaseService;
+    private DatabaseService fromDatabaseService;
     @Autowired
-    private ToDatabaseService toDatabaseService;
+    private DatabaseService toDatabaseService;
     //maxwell实例
     private Maxwell maxwell;
     //循环周期 秒
     private long heartbeatCycle = 10000L;
     //是否终止状态
     private boolean terminate = false;
-    //mysql clientId
-    private String clientId;
 
     /**
      * 开始传输
@@ -51,7 +49,6 @@ public class JobService extends Thread {
         setTerminate(false);
         //开始任务
         if (!isAlive()) {
-            setClientId(clientId);
             start();
         }
     }
@@ -91,26 +88,26 @@ public class JobService extends Thread {
         //参数列表
         List<String> argsList = new ArrayList<>();
         //maxwell自己的数据库配置
-        argsList.add("--user=" + toDatabaseService.getUsername() + "");
-        argsList.add("--password=" + toDatabaseService.getPassword() + "");
+        argsList.add("--user=" + toDatabaseService.getUsername());
+        argsList.add("--password=" + toDatabaseService.getPassword());
         argsList.add("--host=" + toDatabaseService.getHost());
         argsList.add("--port=" + toDatabaseService.getPort());
-        argsList.add("--schema_database=" + toDatabaseService.getHost());
+        argsList.add("--schema_database=" + toDatabaseService.getDatabase());
         //maxwell读取binlog的配置
-        argsList.add("--filter=exclude: *.*,include: " + fromDatabaseService.getHost() + ".*");
-        argsList.add("--replication_user=" + fromDatabaseService.getUsername() + "");
-        argsList.add("--replication_password=" + fromDatabaseService.getPassword() + "");
+        argsList.add("--filter=exclude: *.*,include: " + fromDatabaseService.getDatabase() + ".*");
+        argsList.add("--replication_user=" + fromDatabaseService.getUsername());
+        argsList.add("--replication_password=" + fromDatabaseService.getPassword());
         argsList.add("--replication_host=" + fromDatabaseService.getHost());
         argsList.add("--replication_port=" + fromDatabaseService.getPort());
         //设置maxwell作为mysql客户端的唯一值
-        argsList.add("--replica_server_id=" + clientId);
+        argsList.add("--replica_server_id=" + TablePrefixConfig.getClientId());
         argsList.add("--producer=view");
         argsList.add("--output_file=logs/maxwell.log");//无实际作用参数
         argsList.add("--output_primary_keys=true");
         argsList.add("--output_primary_key_columns=true");
         argsList.add("--output_ddl=true");
         argsList.add("--bootstrapper=sync");
-        argsList.add("--client_id=" + clientId);
+        argsList.add("--client_id=" + TablePrefixConfig.getClientId());
         String[] args = CollectionUtil.toArray(argsList.iterator());
         MaxwellConfig config = new MaxwellConfig(args);
 
@@ -130,9 +127,5 @@ public class JobService extends Thread {
         if (terminate && maxwell != null) {
             maxwell.terminate();
         }
-    }
-
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
     }
 }

@@ -1,7 +1,9 @@
 package com.jingsky.mv.config;
 
+import com.jingsky.mv.util.DatabaseService;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -13,13 +15,13 @@ public class DatasourceConfig {
     private HikariDataSource from;
     private HikariDataSource to;
 
-    @Bean("fromDataSource")
-    public HikariDataSource getFrom() {
-        return from;
+    @Bean("fromDatabaseService")
+    public DatabaseService fromDatabaseService() {
+        return new DatabaseService(from);
     }
 
-    @Bean("toDataSource")
-    public HikariDataSource getTo() {
-        return to;
+    @Bean("toDatabaseService")
+    public DatabaseService toDatabaseService() {
+        return new DatabaseService(to);
     }
 }

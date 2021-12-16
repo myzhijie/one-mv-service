@@ -21,28 +21,23 @@ import java.util.Map;
  */
 @Slf4j
 @Getter
-abstract public class DatabaseService {
+public class DatabaseService {
+    private HikariDataSource dataSource;
     private String username;
     private String password;
     private String host;
     private Integer port;
     private String database;
 
-    public DatabaseService(){
-        URI uri = URI.create(getDatasource().getJdbcUrl().substring(5));
+    public DatabaseService(HikariDataSource dataSource){
+        this.dataSource=dataSource;
+        URI uri = URI.create(dataSource.getJdbcUrl().substring(5));
         this.host=uri.getHost();
         this.port=uri.getPort();
         this.database=uri.getPath().substring(1);
-        this.username=getDatasource().getUsername();
-        this.password=getDatasource().getPassword();
+        this.username=dataSource.getUsername();
+        this.password=dataSource.getPassword();
     }
-
-
-    /**
-     * 返回一个Hikari数据源
-     * @return HikariDataSource
-     */
-    abstract public HikariDataSource getDatasource();
 
     /**
      * 执行sql语句
@@ -51,7 +46,7 @@ abstract public class DatabaseService {
      * @throws Exception
      */
     public int execute(String sql) throws Exception {
-        Connection conn = getDatasource().getConnection();
+        Connection conn = dataSource.getConnection();
         int rows = 0;
         try {
             QueryRunner qr = new QueryRunner();
@@ -70,7 +65,7 @@ abstract public class DatabaseService {
      * @throws Exception
      */
     public int execute(String sql, Object... params) throws Exception {
-        Connection conn = getDatasource().getConnection();
+        Connection conn = dataSource.getConnection();
         int rows = 0;
         try {
             QueryRunner qr = new QueryRunner();
@@ -113,7 +108,7 @@ abstract public class DatabaseService {
         List<T> results = null;
         Connection conn = null;
         try {
-            conn = getDatasource().getConnection();
+            conn = dataSource.getConnection();
             QueryRunner qr = new QueryRunner();
             BeanListHandler<T> beanListHandler = new BeanListHandler(cls, new BasicRowProcessor(new GenerousBeanProcessor()));
             results = qr.query(conn, sql, beanListHandler, param);
@@ -135,7 +130,7 @@ abstract public class DatabaseService {
         List<Map<String, Object>> results = null;
         Connection conn = null;
         try {
-            conn = getDatasource().getConnection();
+            conn = dataSource.getConnection();
             QueryRunner qr = new QueryRunner();
             results = qr.query(conn, sql, new MapListHandler(), param);
         } finally {
@@ -145,6 +140,6 @@ abstract public class DatabaseService {
     }
 
     public Connection getConnection() throws SQLException {
-        return getDatasource().getConnection();
+        return dataSource.getConnection();
     }
 }
