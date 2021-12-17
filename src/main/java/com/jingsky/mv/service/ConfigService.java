@@ -2,8 +2,7 @@ package com.jingsky.mv.service;
 
 import com.jingsky.mv.config.TablePrefixConfig;
 import com.jingsky.mv.util.DatabaseService;
-import com.jingsky.mv.vo.TableView;
-import com.jingsky.mv.vo.View;
+import com.jingsky.mv.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +47,55 @@ public class ConfigService {
             StringBuffer insertSb = new StringBuffer("insert into " + TablePrefixConfig.getTablePrefix()+"well_bootstrap");
             insertSb.append("(`id`,`table_name`,`repeat_order`,`client_id`,`custom_sql`,`batch_num`,`database_name`)values (?,?,?,?,?,?,?)");
             toDatabaseService.execute(insertSb.toString(), view.getId(), view.getMasterTable(), view.getId(), TablePrefixConfig.getClientId(), view.getSourceSql(), 1000, fromDatabaseService.getDatabase());
+            //判断视图表是否存在，不存在创建视图表
+            createViewIfNotExist(view);
         }
+    }
+
+    /**
+     * 如果视图表不存在，则创建视图表
+     * @param view 视图
+     */
+    private void createViewIfNotExist(View view) throws Exception {
+        String sql=makeCreateViewSql(view);
+        log.info("Executing create view sql :\n"+sql);
+        toDatabaseService.execute(sql);
+    }
+
+    /**
+     * 生成创建视图表SQL
+     * @param view 视图
+     * @return String
+     */
+    public String makeCreateViewSql(View view) throws Exception {
+        //列中的字段收集，源表+源字段：视图中字段名
+        Map<String,String> colMap=new HashMap<>();
+        StringBuffer sb=new StringBuffer("CREATE TABLE IF NOT EXISTS `"+view.getMvName()+"` ( \n");
+        //拼接列
+        for(ViewCol col : view.getViewColList()){
+            ColumnInfo columnInfo=fromDatabaseService.getColumnInfo(col.getSourceTable(),col.getSourceCol());
+            String nullFlag="NO".equals(columnInfo.getNull()) ? " NOT" :" DEFAULT";
+            sb.append("    `"+col.getCol()+"` "+columnInfo.getType()+nullFlag+" NULL COMMENT '"+columnInfo.getComment()+"',\n");
+            colMap.put(col.getSourceTable()+"_"+col.getSourceCol(),col.getCol());
+        }
+        //拼接left join
+        for(ViewLeftJoin leftJoin : view.getViewLeftJoinList()){
+            String tableColName=leftJoin.getTable()+"_"+leftJoin.getJoinCol();
+            //已经存在的列不需要增加
+            if(colMap.keySet().contains(tableColName)) {
+                sb.append("    KEY `key_"+colMap.get(tableColName)+"` (`"+colMap.get(tableColName)+"`)\n");
+            }else{
+                ColumnInfo columnInfo=fromDatabaseService.getColumnInfo(leftJoin.getTable(),leftJoin.getJoinCol());
+                String nullFlag="NO".equals(columnInfo.getNull()) ? " NOT" :" DEFAULT";
+                sb.append("    `" +tableColName+ "` "+columnInfo.getType()+nullFlag);
+                sb.append(" NULL COMMENT '"+columnInfo.getComment()+"',\n");
+                sb.append("    KEY `key_"+tableColName+"` (`"+tableColName+"`),\n");
+            }
+        }
+        sb.append("`_updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '无用，仅参考',\n");
+        sb.append("    PRIMARY KEY (`"+view.getMasterTablePk()+"`)\n");
+        sb.append(") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+        return sb.toString();
     }
 
     /**

@@ -1,8 +1,10 @@
 package com.jingsky.mv.util;
 
+import com.jingsky.mv.vo.ColumnInfo;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.BasicRowProcessor;
 import org.apache.commons.dbutils.GenerousBeanProcessor;
 import org.apache.commons.dbutils.QueryRunner;
@@ -37,6 +39,21 @@ public class DatabaseService {
         this.database=uri.getPath().substring(1);
         this.username=dataSource.getUsername();
         this.password=dataSource.getPassword();
+    }
+
+    /**
+     * 获取某个表下字段的信息
+     * @param tableName 表名
+     * @param column 字段名
+     * @return Map<String,Object> <br>
+     * key,Type:字段类型 如：varchar(32)<br>
+     * key,Null:是否可为null YES或NO<br>
+     * key,Key:是否为主键 PRI或空字符串<br>
+     */
+    public ColumnInfo getColumnInfo(String tableName, String column) throws SQLException, URISyntaxException {
+        String sql="show full columns from "+tableName+" like '"+column+"';";
+        List<ColumnInfo> mapList=query(sql,ColumnInfo.class);
+        return CollectionUtils.isNotEmpty(mapList) ? mapList.get(0) : null;
     }
 
     /**

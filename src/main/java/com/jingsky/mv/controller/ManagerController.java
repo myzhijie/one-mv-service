@@ -3,9 +3,15 @@ package com.jingsky.mv.controller;
 import com.jingsky.mv.service.ConfigService;
 import com.jingsky.mv.service.JobService;
 import com.jingsky.mv.util.Response;
+import com.jingsky.mv.vo.View;
+import org.apache.shiro.crypto.hash.Hash;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 同步管理Controller
@@ -25,7 +31,14 @@ public class ManagerController {
      */
     @RequestMapping("configInfo")
     public Response configInfo() throws Exception {
-        return new Response(configService.getAllView());
+        Map<String,Object> result=new HashMap<>();
+
+        List<View> viewList=configService.getAllView();
+        result.put("viewList",viewList);
+        for(View view : viewList){
+            result.put(view.getMvName()+" CreateViewSql",configService.makeCreateViewSql(view));
+        }
+        return new Response(result);
     }
 
     /**
