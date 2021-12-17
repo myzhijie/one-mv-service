@@ -60,6 +60,10 @@ public class View {
         for(ViewCol col : this.viewColList){
             sb.append("    "+col.getSourceTable()+"."+col.getSourceCol()+" as "+col.getCol()+",\n");
         }
+        //拼接上join关联的字段
+        for(ViewLeftJoin leftJoin : this.viewLeftJoinList){
+            sb.append("    "+leftJoin.getTable()+"."+leftJoin.getJoinCol()+" as "+leftJoin.getTable()+"_"+leftJoin.getJoinCol()+",\n");
+        }
         //去掉最后一个多余的,
         sb=new StringBuffer(sb.substring(0,sb.length()-2)+"\n");
         //拼接主表和where
