@@ -46,7 +46,7 @@ public class ConfigService {
         for (View view : viewsList) {
             StringBuffer insertSb = new StringBuffer("insert into " + TablePrefixConfig.getTablePrefix()+"well_bootstrap");
             insertSb.append("(`id`,`table_name`,`repeat_order`,`client_id`,`custom_sql`,`batch_num`,`database_name`)values (?,?,?,?,?,?,?)");
-            toDatabaseService.execute(insertSb.toString(), view.getId(), view.getMasterTable(), view.getId(), TablePrefixConfig.getClientId(), view.toSql(), 1000, fromDatabaseService.getDatabase());
+            toDatabaseService.execute(insertSb.toString(), view.getId(), view.getMasterTable(), view.getId(), TablePrefixConfig.getClientId(), view.getSourceSql(), 1000, fromDatabaseService.getDatabase());
         }
     }
 

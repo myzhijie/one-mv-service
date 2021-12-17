@@ -1,5 +1,6 @@
 package com.jingsky.mv.controller;
 
+import com.jingsky.mv.service.ConfigService;
 import com.jingsky.mv.service.JobService;
 import com.jingsky.mv.util.Response;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class ManagerController {
     @Autowired
     private JobService jobService;
+    @Autowired
+    private ConfigService configService;
+
+    /**
+     * 打印传输的信息
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping("configInfo")
+    public Response configInfo() throws Exception {
+        return new Response(configService.getAllView());
+    }
 
     /**
      * 终止同步任务

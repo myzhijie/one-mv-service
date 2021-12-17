@@ -197,7 +197,7 @@ public class ViewProducerHelper {
         }else{
             for(ViewLeftJoin leftJoin : view.getViewLeftJoinList()){
                 if(table.equals(leftJoin.getTable())){
-                    tableViewUpdateIdMap.put(table+view.getId(),leftJoin.getJoinCol());
+                    tableViewUpdateIdMap.put(table+view.getId(),table+"_"+leftJoin.getJoinCol());
                     break;
                 }
             }

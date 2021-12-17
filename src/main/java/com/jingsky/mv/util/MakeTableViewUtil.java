@@ -30,6 +30,7 @@ public class MakeTableViewUtil {
         viewLeftJoinList.add(join2);
 
         View view=new View();
+        view.setMvName("t_course_mv");
         view.setId(1);
         view.setMasterTable("t_course_level_course_map");
         view.setMasterTablePk("id");
@@ -38,8 +39,9 @@ public class MakeTableViewUtil {
         view.setViewLeftJoinList(viewLeftJoinList);
 
         JSONObject jsonObject=new JSONObject(view);
-        System.out.println(jsonObject.toString());
-        System.out.println(view.toSql());
+        System.out.println(jsonObject);
+        System.out.println(view.makeCreateViewSql());
+        System.out.println(view.makeSourceSql());
     }
 
 }
