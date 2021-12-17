@@ -22,6 +22,8 @@ public class ViewProducer extends AbstractProducer {
     private ViewProducerHelper helper = (ViewProducerHelper) GetBeanUtil.getContext().getBean("viewProducerHelper");
     //bootstrap时批量的数据
     ThreadLocal<ArrayList<RowMap>> bootstrapRowMapList = ThreadLocal.withInitial(() -> new ArrayList<>());
+    //用来记录bootstrap的总条数
+    ThreadLocal<Integer> bootstrapNum = ThreadLocal.withInitial(() -> new Integer(0));
 
     public ViewProducer(MaxwellContext context) throws IOException{
         super(context);
@@ -163,32 +165,31 @@ public class ViewProducer extends AbstractProducer {
      * @throws Exception
      */
     private void handleBootstrap(RowMap rowMap,String type,View view) throws Exception {
-        if(bootstrapRowMapList.get() == null){
-            bootstrapRowMapList.set(new ArrayList());
-        }
         if (type.equals("bootstrap-insert")) {
             bootstrapRowMapList.get().add(rowMap);
             if (bootstrapRowMapList.get().size() >= rowMap.getBatchNum()) {
-                helper.handleBootstrapInsert(view.getMasterTable(),bootstrapRowMapList.get());
-                bootstrapRowMapList.set(new ArrayList());
+                doBootstrapInsert(view);
             }
         } else if (type.equals("bootstrap-complete")) {
-            handleBootstrapComplete(view);
+            if (bootstrapRowMapList.get().size() > 0) {
+                doBootstrapInsert(view);
+            }
         } else if (type.equals("bootstrap-start")) {
-            log.info("handleBootstrap:"+view.getMvName()+"start");
+            //log.info("handleBootstrap:"+view.getMvName()+" started");
         }
     }
 
     /**
-     * 对bootstrap complete进行处理
-     *
+     * 将bootstrap的数据插入到数据库
+     * @param view
      * @throws Exception
      */
-    private void handleBootstrapComplete(View view) throws Exception {
-        if (bootstrapRowMapList.get().size() > 0) {
-            helper.handleBootstrapInsert(view.getMasterTable(),bootstrapRowMapList.get());
-            bootstrapRowMapList.set(new ArrayList());
-        }
+    private void doBootstrapInsert(View view) throws Exception {
+        helper.handleBootstrapInsert(view.getMasterTable(),bootstrapRowMapList.get());
+        //记录bootstrap的条数
+        bootstrapNum.set(bootstrapNum.get()+bootstrapRowMapList.get().size());
+        log.info(view.getMvName()+" had bootstrapped nums: "+bootstrapNum.get());
+        bootstrapRowMapList.set(new ArrayList());
     }
 
 }
