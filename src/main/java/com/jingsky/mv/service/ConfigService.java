@@ -83,7 +83,7 @@ public class ConfigService {
             String tableColName=leftJoin.getTable()+"_"+leftJoin.getJoinCol();
             //已经存在的列不需要增加
             if(colMap.keySet().contains(tableColName)) {
-                sb.append("    KEY `key_"+colMap.get(tableColName)+"` (`"+colMap.get(tableColName)+"`)\n");
+                sb.append("    KEY `key_"+colMap.get(tableColName)+"` (`"+colMap.get(tableColName)+"`),\n");
             }else{
                 ColumnInfo columnInfo=fromDatabaseService.getColumnInfo(leftJoin.getTable(),leftJoin.getJoinCol());
                 String nullFlag="NO".equals(columnInfo.getNull()) ? " NOT" :" DEFAULT";

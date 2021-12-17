@@ -17,7 +17,7 @@ public class MakeTableViewUtil {
         //列
         ViewCol viewCol1=new ViewCol("id","t_course_level_course_map","id");
         ViewCol viewCol2=new ViewCol("course_name","t_course","course_name");
-        ViewCol viewCol4=new ViewCol("course_ida","t_course","id");
+        ViewCol viewCol4=new ViewCol("course_id","t_course","id");
         ViewCol viewCol3=new ViewCol("level_name","t_course_level","level_name");
         List<ViewCol> viewColList=new ArrayList<>();
         viewColList.add(viewCol1);

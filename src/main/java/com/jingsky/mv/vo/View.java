@@ -55,14 +55,19 @@ public class View {
         if(sourceSql!=null){
             return sourceSql;
         }
+        //列中的字段收集，源表+源字段
+        List<String> colList=new ArrayList<>();
         StringBuffer sb=new StringBuffer("select \n");
         //拼接列
         for(ViewCol col : this.viewColList){
             sb.append("    "+col.getSourceTable()+"."+col.getSourceCol()+" as "+col.getCol()+",\n");
+            colList.add(col.getSourceTable()+"_"+col.getSourceCol());
         }
         //拼接上join关联的字段
         for(ViewLeftJoin leftJoin : this.viewLeftJoinList){
-            sb.append("    "+leftJoin.getTable()+"."+leftJoin.getJoinCol()+" as "+leftJoin.getTable()+"_"+leftJoin.getJoinCol()+",\n");
+            if(!colList.contains(leftJoin.getTable()+"_"+leftJoin.getJoinCol())) {
+                sb.append("    " + leftJoin.getTable() + "." + leftJoin.getJoinCol() + " as " + leftJoin.getTable() + "_" + leftJoin.getJoinCol() + ",\n");
+            }
         }
         //去掉最后一个多余的,
         sb=new StringBuffer(sb.substring(0,sb.length()-2)+"\n");
