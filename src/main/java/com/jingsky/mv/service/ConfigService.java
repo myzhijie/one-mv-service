@@ -41,11 +41,15 @@ public class ConfigService {
         //将不存在的表循环插入到bootstrap表中
         List<View> viewsList = getAllView();
         for (View view : viewsList) {
-            StringBuffer insertSb = new StringBuffer("insert into " + TablePrefixConfig.getTablePrefix()+"well_bootstrap");
-            insertSb.append("(`id`,`table_name`,`repeat_order`,`client_id`,`custom_sql`,`batch_num`,`database_name`)values (?,?,?,?,?,?,?)");
-            toDatabaseService.execute(insertSb.toString(), view.getId(), view.getMasterTable(), view.getId(), TablePrefixConfig.getClientId(), view.getSourceSql(), 1000, fromDatabaseService.getDatabase());
-            //判断视图表是否存在，不存在创建视图表
-            createViewIfNotExist(view);
+            //bootstrap表中已经存在的不插入
+            Object bootstrapDb = findById("well_bootstrap", view.getId(), Object.class);
+            if(bootstrapDb==null) {
+                StringBuffer insertSb = new StringBuffer("insert into " + TablePrefixConfig.getTablePrefix() + "well_bootstrap");
+                insertSb.append("(`id`,`table_name`,`repeat_order`,`client_id`,`custom_sql`,`batch_num`,`database_name`)values (?,?,?,?,?,?,?)");
+                toDatabaseService.execute(insertSb.toString(), view.getId(), view.getMasterTable(), view.getId(), TablePrefixConfig.getClientId(), view.getSourceSql(), 1000, fromDatabaseService.getDatabase());
+                //判断视图表是否存在，不存在创建视图表
+                createViewIfNotExist(view);
+            }
         }
     }
 

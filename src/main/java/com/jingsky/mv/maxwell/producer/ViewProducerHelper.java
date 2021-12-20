@@ -91,7 +91,7 @@ public class ViewProducerHelper {
      */
     public void delData4View(RowMap rowMap, View view) throws Exception {
         String delSql="delete from "+view.getMvName()+" where id=?";
-        int num=toDatabaseService.execute(delSql,rowMap.getData("id"));
+        int num=toDatabaseService.execute(delSql,rowMap.getData(view.getMasterTablePk()));
         if(num!=1){
             throw new RuntimeException("SQL result must 1,but now:"+num+",sql:"+delSql);
         }

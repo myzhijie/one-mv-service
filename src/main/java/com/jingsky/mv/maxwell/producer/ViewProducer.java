@@ -82,13 +82,13 @@ public class ViewProducer extends AbstractProducer {
         for(View view : viewList){
             //此表作为view的主表时
             if(view.getMasterTable().equals(rowMap.getTable())){
-                //判断删除前后对where条件的影响
-                int flag= helper.chkWhere4RowMap(rowMap,view.getMasterWhereSql());
-                if(flag==-1){
-                    //需删除
+                if(StringUtils.isBlank(view.getMasterWhereSql())){
                     helper.delData4View(rowMap,view);
                 }else{
-                    //其他情况不处理
+                    int flag = helper.chkWhere4RowMap(rowMap,view.getMasterWhereSql());
+                    if(flag==2 || flag==-1){
+                        helper.delData4View(rowMap,view);
+                    }
                 }
             }else{
                 //非view主表删除时，因没有where条件则直接清空View中的对应列。

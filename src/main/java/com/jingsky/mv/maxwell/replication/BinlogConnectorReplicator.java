@@ -270,8 +270,9 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					this.taskState.stopped();
 				}
 			}
-		} else if ( !shouldSkipRow(row) )
+		} else {
 			producer.push(row);
+		}
 	}
 
 
