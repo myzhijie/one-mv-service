@@ -82,18 +82,13 @@ public class ViewProducer extends AbstractProducer {
         for(View view : viewList){
             //此表作为view的主表时
             if(view.getMasterTable().equals(rowMap.getTable())){
-                if(StringUtils.isBlank(view.getMasterWhereSql())){
+                boolean exist=helper.chkDateExistInWhere(rowMap.getTable(),view.getMasterWhereSql(),rowMap.getData());
+                if(exist){
                     helper.delData4View(rowMap,view);
-                }else{
-                    int flag = helper.chkWhere4RowMap(rowMap,view.getMasterWhereSql());
-                    if(flag==2 || flag==-1){
-                        helper.delData4View(rowMap,view);
-                    }
                 }
             }else{
                 //非view主表删除时，因没有where条件则直接清空View中的对应列。
-                String whereCol=helper.getTableViewUpdateId(rowMap.getTable(),view.getId());
-                helper.updateData4View(view.getId(),view.getMvName(),whereCol,rowMap);
+                helper.updateData4View(view,rowMap);
             }
         }
     }
@@ -108,24 +103,27 @@ public class ViewProducer extends AbstractProducer {
         for(View view : viewList){
             //此表作为view的主表时
             if(view.getMasterTable().equals(rowMap.getTable())){
-                int flag= helper.chkWhere4RowMap(rowMap,view.getMasterWhereSql());
-                //判断修改前后对where条件的影响
-                if(flag==1){
-                    //需新增
-                    helper.insertData4View(rowMap,view);
-                }else if(flag==-1){
-                    //需删除
-                    helper.delData4View(rowMap,view);
-                }else if(flag==2){
-                    //需更新
-                    helper.updateData4View(view.getId(),view.getMvName(),view.getMasterTablePk(),rowMap);
+                //读取修改前后的情况
+                Map<String,Object> oldDataFull=new HashMap<>();
+                oldDataFull.putAll(rowMap.getData());
+                oldDataFull.putAll(rowMap.getOldData());
+                boolean existBefore=helper.chkDateExistInWhere(rowMap.getTable(),view.getMasterWhereSql(),oldDataFull);
+                boolean existAfter=helper.chkDateExistInWhere(rowMap.getTable(),view.getMasterWhereSql(),rowMap.getData());
+                if(existBefore){
+                    if(existAfter){//需更新
+                        helper.updateData4View(view,rowMap);
+                    }else{//需删除
+                        helper.delData4View(rowMap,view);
+                    }
                 }else{
-                    //修改前后都不在where范围内不处理
+                    if(existAfter){//需新增
+                        helper.insertData4View(rowMap,view);
+                    }else{//修改前后都不在where范围内不处理
+                    }
                 }
             }else{
                 //非view主表时，因没有where条件直接尝试更新数据
-                String whereCol=helper.getTableViewUpdateId(rowMap.getTable(),view.getId());
-                helper.updateData4View(view.getId(),view.getMvName(),whereCol,rowMap);
+                helper.updateData4View(view,rowMap);
             }
         }
     }
@@ -144,7 +142,8 @@ public class ViewProducer extends AbstractProducer {
                 continue;
             }
             //主表有where条件且新建的数据不符合where条件直接跳过
-            if(StringUtils.isNotEmpty(view.getMasterWhereSql()) && helper.chkWhere4RowMap(rowMap,view.getMasterWhereSql())!=1){
+            String whereSql=view.getMasterWhereSql();
+            if(StringUtils.isNotBlank(whereSql) && !helper.chkDateExistInWhere(rowMap.getTable(),whereSql,rowMap.getData())){
                 continue;
             }
             //根据SQL从库中查询数据进行新增

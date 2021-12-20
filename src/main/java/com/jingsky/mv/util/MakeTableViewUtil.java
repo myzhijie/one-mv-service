@@ -15,15 +15,15 @@ public class MakeTableViewUtil {
 
     public static void main(String[] args){
         //列
-        ViewCol viewCol1=new ViewCol("id","t_course_level_course_map","ID");
         ViewCol viewCol2=new ViewCol("course_name","t_course","COURSE_NAME");
-        ViewCol viewCol4=new ViewCol("course_id","t_course","ID");
         ViewCol viewCol3=new ViewCol("level_name","t_course_level","LEVEL_NAME");
+        ViewCol viewCol4=new ViewCol("course_id","t_course","ID");
+        ViewCol viewCol5=new ViewCol("note","t_course_level_course_map","note");
         List<ViewCol> viewColList=new ArrayList<>();
-        viewColList.add(viewCol1);
         viewColList.add(viewCol2);
         viewColList.add(viewCol3);
         viewColList.add(viewCol4);
+        viewColList.add(viewCol5);
         //join
         ViewLeftJoin join1=new ViewLeftJoin("t_course","COURSE_ID","ID");
         ViewLeftJoin join2=new ViewLeftJoin("t_course_level","COURSE_LEVEL_ID","ID");

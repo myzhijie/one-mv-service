@@ -1,6 +1,7 @@
 package com.jingsky.mv.vo;
 
 import com.alibaba.fastjson.JSON;
+import com.jingsky.mv.service.ConfigService;
 import com.jingsky.mv.util.DatabaseService;
 import lombok.Data;
 import lombok.Getter;
@@ -58,8 +59,14 @@ public class View {
         //列中的字段收集，源表+源字段
         List<String> colList=new ArrayList<>();
         StringBuffer sb=new StringBuffer("select \n");
+        //首先拼接上主键
+        sb.append("    "+masterTable+"."+masterTablePk+" as "+ ConfigService.VIEW_PK +",\n");
         //拼接列
         for(ViewCol col : this.viewColList){
+            //主键不再重复添加
+            if(col.getSourceTable().equals(masterTable) && col.getSourceCol().equals(masterTablePk)){
+                continue;
+            }
             sb.append("    "+col.getSourceTable()+"."+col.getSourceCol()+" as "+col.getCol()+",\n");
             colList.add(col.getSourceTable()+"_"+col.getSourceCol());
         }
@@ -96,6 +103,6 @@ public class View {
      * @return String
      */
     public String tmpAddIdToMasterWhere(String id){
-        return sourceSql.replaceAll(current+"="+current,"id='"+id+"'");
+        return sourceSql.replaceAll(current+"="+current,masterTable+"."+masterTablePk+"='"+id+"'");
     }
 }

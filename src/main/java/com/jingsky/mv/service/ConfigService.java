@@ -24,6 +24,8 @@ public class ConfigService {
     private DatabaseService toDatabaseService;
     @Autowired
     private DatabaseService fromDatabaseService;
+    //视图的主键名
+    public static final String VIEW_PK="id";
 
     /**
      * 将需要进行全量迁移的表插入到bootstrap表中
@@ -72,9 +74,16 @@ public class ConfigService {
         //列中的字段收集，源表+源字段：视图中字段名
         Map<String,String> colMap=new HashMap<>();
         StringBuffer sb=new StringBuffer("CREATE TABLE IF NOT EXISTS `"+view.getMvName()+"` ( \n");
+        //首先生成id
+        ColumnInfo columnInfo=fromDatabaseService.getColumnInfo(view.getMasterTable(),view.getMasterTablePk());
+        sb.append("    `"+ConfigService.VIEW_PK+"` "+columnInfo.getType()+" NOT NULL COMMENT '"+view.getMasterTable()+":"+view.getMasterTablePk()+",不可修改',\n");
         //拼接列
         for(ViewCol col : view.getViewColList()){
-            ColumnInfo columnInfo=fromDatabaseService.getColumnInfo(col.getSourceTable(),col.getSourceCol());
+            //主键不再重复添加
+            if(col.getSourceTable().equals(view.getMasterTable()) && col.getSourceCol().equals(view.getMasterTablePk())){
+                continue;
+            }
+            columnInfo=fromDatabaseService.getColumnInfo(col.getSourceTable(),col.getSourceCol());
             String nullFlag="NO".equals(columnInfo.getNull()) ? " NOT" :" DEFAULT";
             sb.append("    `"+col.getCol()+"` "+columnInfo.getType()+nullFlag+" NULL COMMENT '"+columnInfo.getComment()+"',\n");
             colMap.put(col.getSourceTable()+"_"+col.getSourceCol(),col.getCol());
@@ -86,7 +95,7 @@ public class ConfigService {
             if(colMap.keySet().contains(tableColName)) {
                 sb.append("    KEY `key_"+colMap.get(tableColName)+"` (`"+colMap.get(tableColName)+"`),\n");
             }else{
-                ColumnInfo columnInfo=fromDatabaseService.getColumnInfo(leftJoin.getTable(),leftJoin.getJoinCol());
+                columnInfo=fromDatabaseService.getColumnInfo(leftJoin.getTable(),leftJoin.getJoinCol());
                 String nullFlag="NO".equals(columnInfo.getNull()) ? " NOT" :" DEFAULT";
                 sb.append("    `" +tableColName+ "` "+columnInfo.getType()+nullFlag);
                 sb.append(" NULL COMMENT '"+columnInfo.getComment()+"',\n");
@@ -94,7 +103,7 @@ public class ConfigService {
             }
         }
         sb.append("`_updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '无用，仅参考',\n");
-        sb.append("    PRIMARY KEY (`"+view.getMasterTablePk()+"`)\n");
+        sb.append("    PRIMARY KEY (`"+ConfigService.VIEW_PK+"`)\n");
         sb.append(") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
         return sb.toString();
     }

@@ -43,8 +43,8 @@ public class ViewProducerHelper {
     private Map<String,List<View>> tableViewsMap=new HashMap<>();
     //表视图ID和列的对应
     private Map<String,List<ViewCol>> tableViewColsMap=new HashMap<>();
-    //表视图ID和更新时索引字段的对应
-    private Map<String,String> tableViewUpdateIdMap=new HashMap<>();
+    //表视图ID和更新时索引字段和老数据表中字段的对应
+    private Map<String,String[]> tableViewUpdateIdMap=new HashMap<>();
 
 
     /**
@@ -63,22 +63,27 @@ public class ViewProducerHelper {
 
     /**
      * 更新视图中的值
-     * @param viewId 视图ID
-     * @param viewName 视图名称
-     * @param whereCol 更新时where列
+     * @param view 视图
      * @param rowMap 行数据Map
      */
-    public void updateData4View(Integer viewId,String viewName, String whereCol,RowMap rowMap) throws Exception {
-        List<ViewCol> colList=getViewColsByTable(rowMap.getTable(),viewId);
-        StringBuffer updateSql=new StringBuffer("update "+viewName+" set ");
+    public void updateData4View(View view,RowMap rowMap) throws Exception {
+        //视图中的where字段
+        String whereCol=getTableViewUpdateId(rowMap.getTable(),view.getId());
+        //源表中的where字段
+        String whereColSource=getTableViewUpdateSourceCol(rowMap.getTable(),view.getId());
+
+        List<ViewCol> colList=getViewColsByTable(rowMap.getTable(),view.getId());
+        StringBuffer updateSql=new StringBuffer("update "+view.getMvName()+" set ");
         for(ViewCol viewCol : colList){
             if(!whereCol.equals(viewCol.getCol())){
                 updateSql.append(viewCol.getCol()+"='"+rowMap.getData(viewCol.getSourceCol())+"',");
             }
         }
-        int num=toDatabaseService.execute(updateSql.substring(0,updateSql.length()-1)+" where "+whereCol+"='"+rowMap.getData(whereCol)+"'");
-        if(num<1){
-            throw new RuntimeException("SQL result must >=1,but now:"+num+",sql:"+updateSql);
+        String sql=updateSql.substring(0,updateSql.length()-1)+" where "+whereCol+"='"+rowMap.getData(whereColSource)+"'";
+        int num=toDatabaseService.execute(sql);
+        log.info("update sql:"+sql);
+        if(view.getMasterTable().equals(rowMap.getTable()) && num<1){
+            throw new RuntimeException("SQL result must >=1,but now:"+num+",sql:"+sql);
         }
     }
 
@@ -91,6 +96,7 @@ public class ViewProducerHelper {
     public void delData4View(RowMap rowMap, View view) throws Exception {
         String delSql="delete from "+view.getMvName()+" where id=?";
         int num=toDatabaseService.execute(delSql,rowMap.getData(view.getMasterTablePk()));
+        log.info("delete sql:"+delSql.substring(0,delSql.length()-1)+rowMap.getData(view.getMasterTablePk()));
         if(num!=1){
             throw new RuntimeException("SQL result must 1,but now:"+num+",sql:"+delSql);
         }
@@ -103,38 +109,14 @@ public class ViewProducerHelper {
      * @throws Exception
      */
     public void insertData4View(RowMap rowMap, View view) throws Exception {
-        String querySql=view.tmpAddIdToMasterWhere(rowMap.getData().get("id").toString());
+        String querySql=view.tmpAddIdToMasterWhere(rowMap.getData().get(view.getMasterTablePk()).toString());
         List<Map<String, Object>> dataList=fromDatabaseService.query(querySql);
         if(dataList!=null && dataList.size()>1){
             throw new RuntimeException("SQL result must 1,but now:"+dataList.size()+",sql:"+querySql);
         }
         String sql=makeInsertSql(view.getMvName(),dataList);
+        log.info("insert sql:"+sql);
         toDatabaseService.execute(sql);
-    }
-
-    /**
-     * 判断修改前后对表的影响
-     * @param rowMap
-     * @param whereSql where语句
-     * @return 0 不影响 1 需新增记录 -1 需减少记录 2需更新数据
-     * @throws Exception
-     */
-     public Integer chkWhere4RowMap(RowMap rowMap,String whereSql) throws Exception {
-        if(StringUtils.isEmpty(whereSql)){
-            return 2;
-        }
-        //尝试创建临时表
-        String tmpTableSub= UUID.randomUUID().toString().replace("-","");
-        String createSql="create temporary table if not exists "+rowMap.getTable()+tmpTableSub+" like "+rowMap.getTable();
-        fromDatabaseService.execute(createSql);
-        //判断老数据是否符合where条件
-        Map<String, Object> dataOldFull=new HashMap<>();
-        dataOldFull.putAll(rowMap.getData());
-        dataOldFull.putAll(rowMap.getOldData());
-        boolean oldExist=rowMap.getOldData().size()<=0 ? false : chkDateExistInWhere(rowMap.getTable()+tmpTableSub,whereSql,dataOldFull);
-        //判断新数据是否符合where条件
-        boolean newExist=chkDateExistInWhere(rowMap.getTable()+tmpTableSub,whereSql,rowMap.getData());
-        return oldExist ? (newExist ? 2 : -1) : (newExist ? 1 : 0);
     }
 
     /**
@@ -145,15 +127,20 @@ public class ViewProducerHelper {
      * @return boolean true 在
      * @throws SQLException
      */
-    private boolean chkDateExistInWhere(String table,String whereSql,Map<String, Object> dataRowMap) throws Exception {
+    public boolean chkDateExistInWhere(String table,String whereSql,Map<String, Object> dataRowMap) throws Exception {
+        if(StringUtils.isBlank(whereSql)){
+            return true;
+        }
+        //创建临时表
+        String tmpTableSub= UUID.randomUUID().toString().replace("-","");
+        String createSql="create temporary table "+table+tmpTableSub+" like "+table;
+        fromDatabaseService.execute(createSql);
+        //插入数据
         List<Map<String,Object>> list=new ArrayList<>();
         list.add(dataRowMap);
-        //先清除这个表里的数据
-        fromDatabaseService.execute("delete from "+table);
-        //插入数据
-        fromDatabaseService.execute(makeInsertSql(table,list));
+        fromDatabaseService.execute(makeInsertSql(table+tmpTableSub,list));
         //查询SQL看是否可以匹配
-        String sql="select * from "+table+" where "+whereSql;
+        String sql="select * from "+table+tmpTableSub+" where "+whereSql;
         List<Map<String, Object>> results = fromDatabaseService.query(sql);
         return CollectionUtils.isNotEmpty(results);
     }
@@ -279,18 +266,18 @@ public class ViewProducerHelper {
         //列中的字段收集，源表+源字段：视图中字段名
         Map<String,String> colMap=new HashMap<>();
         for(ViewCol col : view.getViewColList()){
-            colMap.put(col.getSourceTable()+col.getSourceCol(),col.getCol());
+            colMap.put(col.getSourceTable()+"_"+col.getSourceCol(),col.getCol());
         }
         for(ViewLeftJoin leftJoin : view.getViewLeftJoinList()){
-            String tableColName=leftJoin.getTable()+leftJoin.getJoinCol();
+            String tableColName=leftJoin.getTable()+"_"+leftJoin.getJoinCol();
             if(colMap.keySet().contains(tableColName)) {
-                this.tableViewUpdateIdMap.put(leftJoin.getTable()+view.getId(),colMap.get(tableColName));
+                this.tableViewUpdateIdMap.put(leftJoin.getTable()+view.getId(),new String[]{colMap.get(tableColName),leftJoin.getJoinCol()});
             }else{
-                this.tableViewUpdateIdMap.put(leftJoin.getTable()+view.getId(),tableColName);
+                this.tableViewUpdateIdMap.put(leftJoin.getTable()+view.getId(),new String[]{tableColName,leftJoin.getJoinCol()});
             }
         }
         //记录master表主键
-        this.tableViewUpdateIdMap.put(view.getMasterTable()+view.getId(),view.getMasterTablePk());
+        this.tableViewUpdateIdMap.put(view.getMasterTable()+view.getId(),new String[]{ConfigService.VIEW_PK,view.getMasterTablePk()});
     }
 
     /**
@@ -327,6 +314,16 @@ public class ViewProducerHelper {
      * @return String
      */
     public String getTableViewUpdateId(String tableName,Integer viewId){
-        return tableViewUpdateIdMap.get(tableName+viewId);
+        return tableViewUpdateIdMap.get(tableName+viewId)[0];
+    }
+
+    /**
+     * 根据表名和视图id获取更新时的索引字段在原始表中的字段名
+     * @param tableName 表名
+     * @param viewId 视图id
+     * @return String
+     */
+    public String getTableViewUpdateSourceCol(String tableName,Integer viewId){
+        return tableViewUpdateIdMap.get(tableName+viewId)[1];
     }
 }
