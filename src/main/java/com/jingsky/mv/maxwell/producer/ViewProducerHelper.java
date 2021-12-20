@@ -76,8 +76,7 @@ public class ViewProducerHelper {
                 updateSql.append(viewCol.getCol()+"='"+rowMap.getData(viewCol.getSourceCol())+"',");
             }
         }
-        updateSql.append("1=1 where "+whereCol+"='"+rowMap.getData(whereCol)+"'");
-        int num=toDatabaseService.execute(updateSql.toString());
+        int num=toDatabaseService.execute(updateSql.substring(0,updateSql.length()-1)+" where "+whereCol+"='"+rowMap.getData(whereCol)+"'");
         if(num<1){
             throw new RuntimeException("SQL result must >=1,but now:"+num+",sql:"+updateSql);
         }
@@ -124,21 +123,17 @@ public class ViewProducerHelper {
         if(StringUtils.isEmpty(whereSql)){
             return 2;
         }
-        //手动开启事务
-        Connection conn=fromDatabaseService.getConnection();
-        conn.setAutoCommit(false);
-        QueryRunner qr = new QueryRunner();
         //尝试创建临时表
         String tmpTableSub= UUID.randomUUID().toString().replace("-","");
         String createSql="create temporary table if not exists "+rowMap.getTable()+tmpTableSub+" like "+rowMap.getTable();
-        qr.update(conn, createSql);
+        fromDatabaseService.execute(createSql);
         //判断老数据是否符合where条件
-        boolean oldExist=rowMap.getOldData().size()<=0 ? false : chkDateExistInWhere(rowMap.getTable(),whereSql,rowMap.getOldData(),conn,tmpTableSub);
+        Map<String, Object> dataOldFull=new HashMap<>();
+        dataOldFull.putAll(rowMap.getData());
+        dataOldFull.putAll(rowMap.getOldData());
+        boolean oldExist=rowMap.getOldData().size()<=0 ? false : chkDateExistInWhere(rowMap.getTable()+tmpTableSub,whereSql,dataOldFull);
         //判断新数据是否符合where条件
-        boolean newExist=chkDateExistInWhere(rowMap.getTable(),whereSql,rowMap.getData(),conn,tmpTableSub);
-        //事务回滚
-        conn.rollback();
-        conn.close();
+        boolean newExist=chkDateExistInWhere(rowMap.getTable()+tmpTableSub,whereSql,rowMap.getData());
         return oldExist ? (newExist ? 2 : -1) : (newExist ? 1 : 0);
     }
 
@@ -147,19 +142,19 @@ public class ViewProducerHelper {
      * @param table 表名
      * @param whereSql where条件
      * @param dataRowMap 数据行
-     * @param conn 数据库连接
-     * @param tmpTableSub 临时表后缀
      * @return boolean true 在
      * @throws SQLException
      */
-    private boolean chkDateExistInWhere(String table,String whereSql,LinkedHashMap<String, Object> dataRowMap,Connection conn,String tmpTableSub) throws SQLException {
+    private boolean chkDateExistInWhere(String table,String whereSql,Map<String, Object> dataRowMap) throws Exception {
         List<Map<String,Object>> list=new ArrayList<>();
         list.add(dataRowMap);
-        QueryRunner qr = new QueryRunner();
-        qr.update(conn, makeInsertSql(table,list));
+        //先清除这个表里的数据
+        fromDatabaseService.execute("delete from "+table);
+        //插入数据
+        fromDatabaseService.execute(makeInsertSql(table,list));
         //查询SQL看是否可以匹配
-        String sql="select * from "+table+tmpTableSub+" where ("+whereSql+") and id='"+dataRowMap.get("id")+"' limit 1";
-        List<Map<String, Object>> results = qr.query(conn, sql, new MapListHandler());;
+        String sql="select * from "+table+" where "+whereSql;
+        List<Map<String, Object>> results = fromDatabaseService.query(sql);
         return CollectionUtils.isNotEmpty(results);
     }
 
@@ -194,7 +189,7 @@ public class ViewProducerHelper {
      * @param table 表
      * @param view 视图
      */
-    private void initTableViewColMap(String table, View view,Map<String,List<ViewCol>> tableViewColsMap) {
+    private void initTableViewColMap(String table, View view) {
         List<ViewCol> viewColList=tableViewColsMap.get(table+view.getId());
         if(viewColList==null){
             viewColList=new ArrayList<>();
@@ -205,7 +200,7 @@ public class ViewProducerHelper {
                 viewColList.add(col);
             }
         }
-        tableViewColsMap.put(table,viewColList);
+        tableViewColsMap.put(table+view.getId(),viewColList);
     }
 
     /**
@@ -318,9 +313,9 @@ public class ViewProducerHelper {
             }
             viewListJoin.add(view);
             tableViewsMap.put(viewLeftJoin.getTable(),viewListJoin);
-            initTableViewColMap(viewLeftJoin.getTable(),view,tableViewColsMap);
+            initTableViewColMap(viewLeftJoin.getTable(),view);
         }
-        initTableViewColMap(view.getMasterTable(),view,tableViewColsMap);
+        initTableViewColMap(view.getMasterTable(),view);
         initTableViewUpdateIdMap(view);
         log.info("Add view:" + view.getMvName());
     }

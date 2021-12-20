@@ -15,18 +15,18 @@ public class MakeTableViewUtil {
 
     public static void main(String[] args){
         //列
-        ViewCol viewCol1=new ViewCol("id","t_course_level_course_map","id");
-        ViewCol viewCol2=new ViewCol("course_name","t_course","course_name");
-        ViewCol viewCol4=new ViewCol("course_id","t_course","id");
-        ViewCol viewCol3=new ViewCol("level_name","t_course_level","level_name");
+        ViewCol viewCol1=new ViewCol("id","t_course_level_course_map","ID");
+        ViewCol viewCol2=new ViewCol("course_name","t_course","COURSE_NAME");
+        ViewCol viewCol4=new ViewCol("course_id","t_course","ID");
+        ViewCol viewCol3=new ViewCol("level_name","t_course_level","LEVEL_NAME");
         List<ViewCol> viewColList=new ArrayList<>();
         viewColList.add(viewCol1);
         viewColList.add(viewCol2);
         viewColList.add(viewCol3);
         viewColList.add(viewCol4);
         //join
-        ViewLeftJoin join1=new ViewLeftJoin("t_course","course_id","id");
-        ViewLeftJoin join2=new ViewLeftJoin("t_course_level","course_level_id","id");
+        ViewLeftJoin join1=new ViewLeftJoin("t_course","COURSE_ID","ID");
+        ViewLeftJoin join2=new ViewLeftJoin("t_course_level","COURSE_LEVEL_ID","ID");
         List<ViewLeftJoin> viewLeftJoinList=new ArrayList<>();
         viewLeftJoinList.add(join1);
         viewLeftJoinList.add(join2);
