@@ -88,6 +88,29 @@ public class ViewProducerHelper {
     }
 
     /**
+     * 更新视图中的值为空，用于非主表的数据被删除时
+     * @param view 视图
+     * @param rowMap 行数据Map
+     */
+    public void emptyData4View(View view,RowMap rowMap) throws Exception {
+        //视图中的where字段
+        String whereCol=getTableViewUpdateId(rowMap.getTable(),view.getId());
+        //源表中的where字段
+        String whereColSource=getTableViewUpdateSourceCol(rowMap.getTable(),view.getId());
+
+        List<ViewCol> colList=getViewColsByTable(rowMap.getTable(),view.getId());
+        StringBuffer updateSql=new StringBuffer("update "+view.getMvName()+" set ");
+        for(ViewCol viewCol : colList){
+            if(!whereCol.equals(viewCol.getCol())){
+                updateSql.append(viewCol.getCol()+" = null,");
+            }
+        }
+        String sql=updateSql.substring(0,updateSql.length()-1)+" where "+whereCol+"='"+rowMap.getData(whereColSource)+"'";
+        int num=toDatabaseService.execute(sql);
+        log.info("update empty sql:"+sql);
+    }
+
+    /**
      * 删除视图中的行
      * @param rowMap 行数据Map
      * @param view 视图

@@ -88,7 +88,7 @@ public class ViewProducer extends AbstractProducer {
                 }
             }else{
                 //非view主表删除时，因没有where条件则直接清空View中的对应列。
-                helper.updateData4View(view,rowMap);
+                helper.emptyData4View(view,rowMap);
             }
         }
     }
