@@ -1,11 +1,14 @@
 package com.jingsky.mv.maxwell.producer;
 
 import com.jingsky.mv.maxwell.row.RowMap;
+import com.jingsky.mv.vo.ColumnInfo;
 import com.jingsky.mv.vo.View;
 import com.jingsky.mv.vo.ViewCol;
 import com.jingsky.mv.vo.ViewLeftJoin;
 import com.jingsky.mv.service.ConfigService;
 import com.jingsky.mv.util.DatabaseService;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
@@ -42,6 +45,7 @@ public class ViewProducerHelper {
     private Map<String,List<ViewCol>> tableViewColsMap=new HashMap<>();
     //表视图ID和更新时索引字段的对应
     private Map<String,String> tableViewUpdateIdMap=new HashMap<>();
+
 
     /**
      * 批量插入到数据表
@@ -186,25 +190,6 @@ public class ViewProducerHelper {
     }
 
     /**
-     * 初始化表视图和视图中此表数据更新时where列对应Map
-     * @param table 表
-     * @param view 视图
-     * @param tableViewUpdateIdMap 关联Map
-     */
-    private void initTableViewUpdateIdMap(String table, View view, Map<String,String> tableViewUpdateIdMap) {
-        if(table.equals(view.getMasterTable())) {
-            tableViewUpdateIdMap.put(table+view.getId(),view.getMasterTablePk());
-        }else{
-            for(ViewLeftJoin leftJoin : view.getViewLeftJoinList()){
-                if(table.equals(leftJoin.getTable())){
-                    tableViewUpdateIdMap.put(table+view.getId(),table+"_"+leftJoin.getJoinCol());
-                    break;
-                }
-            }
-        }
-    }
-
-    /**
      * 初始化表视图列的映射关系
      * @param table 表
      * @param view 视图
@@ -273,23 +258,44 @@ public class ViewProducerHelper {
     }
 
     /**
-     * 获取View下某表对应的更新ID
-     * @param table 表名
-     * @param viewId 视图ID
-     * @return List<ViewCol>
-     */
-    public String getViewUpdateIdByTable(String table, Integer viewId) {
-        return tableViewUpdateIdMap.get(table+viewId);
-    }
-
-    /**
      * 初始化关于视图的数据
      */
     public void initViewsData() throws SQLException, URISyntaxException {
+        //先清理这里共享变量
+        bootstrapTableMap = new HashMap<>();
+        //表和涉及到视图的对应
+        tableViewsMap=new HashMap<>();
+        //表视图ID和列的对应
+        tableViewColsMap=new HashMap<>();
+        //表视图ID和更新时索引字段的对应
+        tableViewUpdateIdMap=new HashMap<>();
+        //初始化所有视图
         List<View> viewList=configService.getAllView();
         for(View view : viewList) {
             initViewData(view);
         }
+    }
+
+    /**
+     * 初始化表更新时的索引字段
+     * @param view
+     */
+    private void initTableViewUpdateIdMap(View view){
+        //列中的字段收集，源表+源字段：视图中字段名
+        Map<String,String> colMap=new HashMap<>();
+        for(ViewCol col : view.getViewColList()){
+            colMap.put(col.getSourceTable()+col.getSourceCol(),col.getCol());
+        }
+        for(ViewLeftJoin leftJoin : view.getViewLeftJoinList()){
+            String tableColName=leftJoin.getTable()+leftJoin.getJoinCol();
+            if(colMap.keySet().contains(tableColName)) {
+                this.tableViewUpdateIdMap.put(leftJoin.getTable()+view.getId(),colMap.get(tableColName));
+            }else{
+                this.tableViewUpdateIdMap.put(leftJoin.getTable()+view.getId(),tableColName);
+            }
+        }
+        //记录master表主键
+        this.tableViewUpdateIdMap.put(view.getMasterTable()+view.getId(),view.getMasterTablePk());
     }
 
     /**
@@ -313,10 +319,19 @@ public class ViewProducerHelper {
             viewListJoin.add(view);
             tableViewsMap.put(viewLeftJoin.getTable(),viewListJoin);
             initTableViewColMap(viewLeftJoin.getTable(),view,tableViewColsMap);
-            initTableViewUpdateIdMap(viewLeftJoin.getTable(),view,tableViewUpdateIdMap);
         }
         initTableViewColMap(view.getMasterTable(),view,tableViewColsMap);
-        initTableViewUpdateIdMap(view.getMasterTable(),view,tableViewUpdateIdMap);
+        initTableViewUpdateIdMap(view);
         log.info("Add view:" + view.getMvName());
+    }
+
+    /**
+     * 根据表名和视图id获取更新时的索引字段
+     * @param tableName 表名
+     * @param viewId 视图id
+     * @return String
+     */
+    public String getTableViewUpdateId(String tableName,Integer viewId){
+        return tableViewUpdateIdMap.get(tableName+viewId);
     }
 }

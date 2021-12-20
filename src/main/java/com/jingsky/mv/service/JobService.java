@@ -4,6 +4,7 @@ import com.jingsky.mv.config.GlobalHandler;
 import com.jingsky.mv.config.TablePrefixConfig;
 import com.jingsky.mv.maxwell.Maxwell;
 import com.jingsky.mv.maxwell.MaxwellConfig;
+import com.jingsky.mv.maxwell.producer.ViewProducerHelper;
 import com.jingsky.mv.util.DatabaseService;
 import com.jingsky.mv.util.exception.BootstrapException;
 import com.jingsky.mv.util.exception.IncrementException;
@@ -27,6 +28,8 @@ public class JobService extends Thread {
     private GlobalHandler globalHandler;
     @Autowired
     private ConfigService configService;
+    @Autowired
+    private ViewProducerHelper viewProducerHelper;
     @Autowired
     private DatabaseService fromDatabaseService;
     @Autowired
@@ -60,6 +63,9 @@ public class JobService extends Thread {
             try {
                 //开始全量数据迁移和数据增量同步
                 if (!terminate) {
+                    //初始化helper
+                    viewProducerHelper.initViewsData();
+                    //启动maxwell
                     startBootstrapAndConsume();
                 }
             } catch (Exception e) {

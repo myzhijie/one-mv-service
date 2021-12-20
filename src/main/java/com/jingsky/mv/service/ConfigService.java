@@ -4,7 +4,6 @@ import com.jingsky.mv.config.TablePrefixConfig;
 import com.jingsky.mv.util.DatabaseService;
 import com.jingsky.mv.vo.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +24,6 @@ public class ConfigService {
     private DatabaseService toDatabaseService;
     @Autowired
     private DatabaseService fromDatabaseService;
-    //所有视图列表
-    private List<View> viewList;
 
     /**
      * 将需要进行全量迁移的表插入到bootstrap表中
@@ -101,17 +98,15 @@ public class ConfigService {
     /**
      * 获取所有视图
      *
-     * @return
+     * @return List<View>
      */
     public List<View> getAllView() throws SQLException, URISyntaxException {
-        if (CollectionUtils.isEmpty(this.viewList)) {
-            this.viewList = new ArrayList<>();
-            List<TableView> tableViewList = findAllView();
-            for (TableView tableView : tableViewList) {
-                this.viewList.add(new View(tableView));
-            }
+        List<View> viewList = new ArrayList<>();
+        List<TableView> tableViewList = findAllView();
+        for (TableView tableView : tableViewList) {
+            viewList.add(new View(tableView));
         }
-        return this.viewList;
+        return viewList;
     }
 
     /**

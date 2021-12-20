@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.jingsky.mv.maxwell.MaxwellContext;
 import com.jingsky.mv.maxwell.row.RowMap;
+import com.jingsky.mv.service.ConfigService;
 import com.jingsky.mv.vo.View;
 import com.jingsky.mv.util.GetBeanUtil;
 import com.jingsky.mv.util.exception.BootstrapException;
@@ -27,12 +28,6 @@ public class ViewProducer extends AbstractProducer {
 
     public ViewProducer(MaxwellContext context) throws IOException{
         super(context);
-        //初始化一些数据
-        try {
-            helper.initViewsData();
-        }catch (Exception e){
-            throw new IOException("ViewProducer initViewsData exception:"+e.getMessage());
-        }
     }
 
     @Override
@@ -97,7 +92,7 @@ public class ViewProducer extends AbstractProducer {
                 }
             }else{
                 //非view主表删除时，因没有where条件则直接清空View中的对应列。
-                String whereCol=helper.getViewUpdateIdByTable(rowMap.getTable(),view.getId());
+                String whereCol=helper.getTableViewUpdateId(rowMap.getTable(),view.getId());
                 helper.updateData4View(view.getId(),view.getMvName(),whereCol,rowMap);
             }
         }
@@ -129,7 +124,7 @@ public class ViewProducer extends AbstractProducer {
                 }
             }else{
                 //非view主表时，因没有where条件直接尝试更新数据
-                String whereCol=helper.getViewUpdateIdByTable(rowMap.getTable(),view.getId());
+                String whereCol=helper.getTableViewUpdateId(rowMap.getTable(),view.getId());
                 helper.updateData4View(view.getId(),view.getMvName(),whereCol,rowMap);
             }
         }
@@ -185,7 +180,7 @@ public class ViewProducer extends AbstractProducer {
      * @throws Exception
      */
     private void doBootstrapInsert(View view) throws Exception {
-        helper.handleBootstrapInsert(view.getMasterTable(),bootstrapRowMapList.get());
+        helper.handleBootstrapInsert(view.getMvName(),bootstrapRowMapList.get());
         //记录bootstrap的条数
         bootstrapNum.set(bootstrapNum.get()+bootstrapRowMapList.get().size());
         log.info(view.getMvName()+" had bootstrapped nums: "+bootstrapNum.get());
