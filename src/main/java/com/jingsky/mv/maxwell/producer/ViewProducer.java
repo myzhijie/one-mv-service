@@ -125,17 +125,17 @@ public class ViewProducer extends AbstractProducer {
         //获取这个表关联的视图
         List<View> viewList=helper.getViewsByTable(rowMap.getTable());
         for(View view : viewList){
-            //新增的表不是视图的主表对视图没有影响
-            if(!view.getMasterTable().equals(rowMap.getTable())){
-                continue;
+            if(view.getMasterTable().equals(rowMap.getTable())){
+                String whereSql=view.getMasterWhereSql();
+                //主表where条件为空，或者新增的数据在where条件内
+                if(StringUtils.isBlank(whereSql) || helper.chkDateExistInWhere(rowMap.getTable(),whereSql,rowMap.getData())){
+                    //根据SQL从库中查询数据进行新增
+                    helper.insertData4View(rowMap,view);
+                }
+            }else{
+                //非主表时刷新View中对应列
+                helper.updateUnMasterData4View(view,rowMap);
             }
-            //主表有where条件且新建的数据不符合where条件直接跳过
-            String whereSql=view.getMasterWhereSql();
-            if(StringUtils.isNotBlank(whereSql) && !helper.chkDateExistInWhere(rowMap.getTable(),whereSql,rowMap.getData())){
-                continue;
-            }
-            //根据SQL从库中查询数据进行新增
-            helper.insertData4View(rowMap,view);
         }
     }
 

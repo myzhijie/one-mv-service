@@ -77,11 +77,12 @@ public class ViewProducerHelper {
                 updateSql.append(viewCol.getCol()+"='"+rowMap.getData(viewCol.getSourceCol())+"',");
             }
         }
-        String sql=updateSql.substring(0,updateSql.length()-1)+" where "+whereCol+"='"+rowMap.getData(whereColSource)+"'";
-        int num=toDatabaseService.execute(sql);
-        log.info("update sql:"+sql);
+        String sql=updateSql.substring(0,updateSql.length()-1)+" where "+whereCol+"=?";
+        Object colValue=rowMap.getData(whereColSource);
+        int num=toDatabaseService.execute(sql,colValue);
+        log.info(sql+",args:"+colValue+",executed num:"+num);
         if(view.getMasterTable().equals(rowMap.getTable()) && num<1){
-            throw new RuntimeException("SQL result must >=1,but now:"+num+",sql:"+sql);
+            throw new RuntimeException("SQL result must >=1,but now:"+num+",sql:"+sql+"args:"+colValue);
         }
     }
 
@@ -102,8 +103,8 @@ public class ViewProducerHelper {
             }
         }
         String sql=updateSql.substring(0,updateSql.length()-1)+" where "+whereCol+"= ? ";
-        toDatabaseService.execute(sql,whereColVal);
-        log.info("update empty sql:"+sql);
+        int num=toDatabaseService.execute(sql,whereColVal);
+        log.info(sql+",args:"+whereColVal+",executed num:"+num);
     }
 
     /**
@@ -115,7 +116,7 @@ public class ViewProducerHelper {
     public void delData4View(View view,Object id) throws Exception {
         String delSql="delete from "+view.getMvName()+" where "+ConfigService.VIEW_PK+"=?";
         int num=toDatabaseService.execute(delSql,id);
-        log.info("delete sql:"+delSql.substring(0,delSql.length()-1)+id+",executed num:"+num);
+        log.info(delSql+",args:"+id+",executed num:"+num);
     }
 
     /**
@@ -131,8 +132,8 @@ public class ViewProducerHelper {
             throw new RuntimeException("SQL result must 1,but now:"+dataList.size()+",sql:"+querySql);
         }
         String sql=makeInsertSql(view.getMvName(),dataList);
-        log.info("insert sql:"+sql);
-        toDatabaseService.execute(sql);
+        int num=toDatabaseService.execute(sql);
+        log.info(sql+",executed num:"+num);
     }
 
     /**
