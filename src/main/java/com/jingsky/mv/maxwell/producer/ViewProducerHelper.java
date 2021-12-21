@@ -112,14 +112,14 @@ public class ViewProducerHelper {
 
     /**
      * 删除视图中的行
-     * @param rowMap 行数据Map
      * @param view 视图
+     * @param id 视图中记录的id
      * @throws Exception
      */
-    public void delData4View(RowMap rowMap, View view) throws Exception {
-        String delSql="delete from "+view.getMvName()+" where id=?";
-        int num=toDatabaseService.execute(delSql,rowMap.getData(view.getMasterTablePk()));
-        log.info("delete sql:"+delSql.substring(0,delSql.length()-1)+rowMap.getData(view.getMasterTablePk()));
+    public void delData4View(View view,Object id) throws Exception {
+        String delSql="delete from "+view.getMvName()+" where "+ConfigService.VIEW_PK+"=?";
+        int num=toDatabaseService.execute(delSql,id);
+        log.info("delete sql:"+delSql.substring(0,delSql.length()-1)+id);
         if(num!=1){
             throw new RuntimeException("SQL result must 1,but now:"+num+",sql:"+delSql);
         }

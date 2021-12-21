@@ -84,7 +84,7 @@ public class ViewProducer extends AbstractProducer {
             if(view.getMasterTable().equals(rowMap.getTable())){
                 boolean exist=helper.chkDateExistInWhere(rowMap.getTable(),view.getMasterWhereSql(),rowMap.getData());
                 if(exist){
-                    helper.delData4View(rowMap,view);
+                    helper.delData4View(view,rowMap.getData(view.getMasterTablePk()));
                 }
             }else{
                 //非view主表删除时，因没有where条件则直接清空View中的对应列。
@@ -110,10 +110,14 @@ public class ViewProducer extends AbstractProducer {
                 boolean existBefore=helper.chkDateExistInWhere(rowMap.getTable(),view.getMasterWhereSql(),oldDataFull);
                 boolean existAfter=helper.chkDateExistInWhere(rowMap.getTable(),view.getMasterWhereSql(),rowMap.getData());
                 if(existBefore){
+                    //id发生变化时使用旧id删除
+                    boolean idChanged=rowMap.getOldData(view.getMasterTablePk())!=null;
                     if(existAfter){//需更新
-                        helper.updateData4View(view,rowMap);
+                        //因可能更改的是外键字段，先删除再新增
+                        helper.delData4View(view,idChanged ? rowMap.getOldData(view.getMasterTablePk()) : rowMap.getData(view.getMasterTablePk()));
+                        helper.insertData4View(rowMap,view);
                     }else{//需删除
-                        helper.delData4View(rowMap,view);
+                        helper.delData4View(view,idChanged ? rowMap.getOldData(view.getMasterTablePk()) : rowMap.getData(view.getMasterTablePk()));
                     }
                 }else{
                     if(existAfter){//需新增
