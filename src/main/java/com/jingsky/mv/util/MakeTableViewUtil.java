@@ -15,34 +15,42 @@ public class MakeTableViewUtil {
 
     public static void main(String[] args){
         //列
-        ViewCol viewCol2=new ViewCol("course_name","t_course","COURSE_NAME");
-        ViewCol viewCol3=new ViewCol("level_name","t_course_level","LEVEL_NAME");
-        ViewCol viewCol4=new ViewCol("course_id","t_course","ID");
-        ViewCol viewCol5=new ViewCol("note","t_course_level_course_map","note");
+        ViewCol viewCol1=new ViewCol("user_name","t_user","name");
+        ViewCol viewCol2=new ViewCol("user_info","t_user","info");
+        ViewCol viewCol3=new ViewCol("role_name","t_role","name");
+        ViewCol viewCol4=new ViewCol("login_time","t_user_login","login_time");
+        ViewCol viewCol5=new ViewCol("note","t_user_login","login_note");
         List<ViewCol> viewColList=new ArrayList<>();
+        viewColList.add(viewCol1);
         viewColList.add(viewCol2);
         viewColList.add(viewCol3);
         viewColList.add(viewCol4);
         viewColList.add(viewCol5);
         //join
-        ViewLeftJoin join1=new ViewLeftJoin("t_course","COURSE_ID","ID");
-        ViewLeftJoin join2=new ViewLeftJoin("t_course_level","COURSE_LEVEL_ID","ID");
+        ViewLeftJoin join1=new ViewLeftJoin("t_user","user_id","id");
+        ViewLeftJoin join2=new ViewLeftJoin("t_role","role_id","id");
         List<ViewLeftJoin> viewLeftJoinList=new ArrayList<>();
         viewLeftJoinList.add(join1);
         viewLeftJoinList.add(join2);
 
         View view=new View();
-        view.setMvName("t_course_mv");
+        view.setMvName("t_login_mv");
         view.setId(1);
-        view.setMasterTable("t_course_level_course_map");
+        view.setMasterTable("t_user_login");
         view.setMasterTablePk("id");
-        view.setMasterWhereSql("1=1");
+        view.setMasterWhereSql("login_time>'2021-12-21 00:00:00'");
         view.setViewColList(viewColList);
         view.setViewLeftJoinList(viewLeftJoinList);
 
-        JSONObject jsonObject=new JSONObject(view);
-        System.out.println(jsonObject);
         System.out.println(view.makeSourceSql());
+        System.out.println(makeInsertTableViewSql(view));
+    }
+
+    public static String makeInsertTableViewSql(View view){
+        JSONObject jsonObject=new JSONObject(view);
+        StringBuffer sb=new StringBuffer("insert into t_mv_table_view(id,mv_name,cols_json,master_table,master_table_pk,where_sql,leftJoinJson,create_by,last_update_by) values (");
+        sb.append("'"+view.getId()+"','"+view.getMvName()+"','"+jsonObject.getJSONArray("viewColList")+"','"+view.getMasterTable()+"','"+view.getMasterTablePk()+"',\""+view.getMasterWhereSql()+"\",'"+jsonObject.getJSONArray("viewLeftJoinList")+"','mark','mark')");
+        return sb.toString();
     }
 
 }

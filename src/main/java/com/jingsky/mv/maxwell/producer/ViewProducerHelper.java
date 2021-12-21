@@ -184,7 +184,11 @@ public class ViewProducerHelper {
         for(Map<String, Object> map : dataMapList){
             sb.append("(");
             for(String colName : map.keySet()){
-                sb.append("'" + map.get(colName) + "',");
+                if(map.get(colName)==null){
+                    sb.append("null,");
+                }else {
+                    sb.append("'" + map.get(colName) + "',");
+                }
             }
             sb.append("),");
         }

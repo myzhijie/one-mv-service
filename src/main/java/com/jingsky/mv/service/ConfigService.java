@@ -84,8 +84,7 @@ public class ConfigService {
                 continue;
             }
             columnInfo=fromDatabaseService.getColumnInfo(col.getSourceTable(),col.getSourceCol());
-            String nullFlag="NO".equals(columnInfo.getNull()) ? " NOT" :" DEFAULT";
-            sb.append("    `"+col.getCol()+"` "+columnInfo.getType()+nullFlag+" NULL COMMENT '"+columnInfo.getComment()+"',\n");
+            sb.append("    `"+col.getCol()+"` "+columnInfo.getType()+" DEFAULT NULL COMMENT '"+columnInfo.getComment()+"',\n");
             colMap.put(col.getSourceTable()+"_"+col.getSourceCol(),col.getCol());
         }
         //拼接left join
@@ -96,9 +95,8 @@ public class ConfigService {
                 sb.append("    KEY `key_"+colMap.get(tableColName)+"` (`"+colMap.get(tableColName)+"`),\n");
             }else{
                 columnInfo=fromDatabaseService.getColumnInfo(leftJoin.getTable(),leftJoin.getJoinCol());
-                String nullFlag="NO".equals(columnInfo.getNull()) ? " NOT" :" DEFAULT";
-                sb.append("    `" +tableColName+ "` "+columnInfo.getType()+nullFlag);
-                sb.append(" NULL COMMENT '"+columnInfo.getComment()+"',\n");
+                sb.append("    `" +tableColName+ "` "+columnInfo.getType());
+                sb.append(" DEFAULT NULL COMMENT '"+columnInfo.getComment()+"',\n");
                 sb.append("    KEY `key_"+tableColName+"` (`"+tableColName+"`),\n");
             }
         }
