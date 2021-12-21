@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.jingsky.mv.maxwell.MaxwellContext;
 import com.jingsky.mv.maxwell.row.RowMap;
-import com.jingsky.mv.service.ConfigService;
 import com.jingsky.mv.vo.View;
 import com.jingsky.mv.util.GetBeanUtil;
 import com.jingsky.mv.util.exception.BootstrapException;
@@ -73,6 +72,31 @@ public class ViewProducer extends AbstractProducer {
     }
 
     /**
+     * 处理数据更新
+     * @param rowMap
+     */
+    private void handleUpdate(RowMap rowMap) throws Exception {
+        //获取这个表关联的视图
+        List<View> viewList=helper.getViewsByTable(rowMap.getTable());
+        for(View view : viewList){
+            if(!view.getMasterTable().equals(rowMap.getTable())){
+                //非view主表时，因没有where条件直接尝试更新数据
+                helper.updateUnMasterData4View(view,rowMap);
+                continue;
+            }
+            //检查修改后是否在where范围内
+            boolean existAfter=helper.chkDateExistInWhere(rowMap.getTable(),view.getMasterWhereSql(),rowMap.getData());
+            //先在view中进行删除，id发生变化时使用旧id删除
+            boolean idChanged=rowMap.getOldData(view.getMasterTablePk())!=null;
+            helper.delData4View(view,idChanged ? rowMap.getOldData(view.getMasterTablePk()) : rowMap.getData(view.getMasterTablePk()));
+            if(existAfter){
+                //之后也存在，直接新增
+                helper.insertData4View(rowMap,view);
+            }
+        }
+    }
+
+    /**
      * 处理数据删除
      * @param rowMap
      */
@@ -82,52 +106,12 @@ public class ViewProducer extends AbstractProducer {
         for(View view : viewList){
             //此表作为view的主表时
             if(view.getMasterTable().equals(rowMap.getTable())){
-                boolean exist=helper.chkDateExistInWhere(rowMap.getTable(),view.getMasterWhereSql(),rowMap.getData());
-                if(exist){
-                    helper.delData4View(view,rowMap.getData(view.getMasterTablePk()));
-                }
+                //直接删除，就算不在where条件内也没关系
+                helper.delData4View(view,rowMap.getData(view.getMasterTablePk()));
             }else{
                 //非view主表删除时，因没有where条件则直接清空View中的对应列。
-                helper.emptyData4View(view,rowMap);
-            }
-        }
-    }
-
-    /**
-     * 处理数据更新
-     * @param rowMap
-     */
-    private void handleUpdate(RowMap rowMap) throws Exception {
-        //获取这个表关联的视图
-        List<View> viewList=helper.getViewsByTable(rowMap.getTable());
-        for(View view : viewList){
-            //此表作为view的主表时
-            if(view.getMasterTable().equals(rowMap.getTable())){
-                //读取修改前后的情况
-                Map<String,Object> oldDataFull=new HashMap<>();
-                oldDataFull.putAll(rowMap.getData());
-                oldDataFull.putAll(rowMap.getOldData());
-                boolean existBefore=helper.chkDateExistInWhere(rowMap.getTable(),view.getMasterWhereSql(),oldDataFull);
-                boolean existAfter=helper.chkDateExistInWhere(rowMap.getTable(),view.getMasterWhereSql(),rowMap.getData());
-                if(existBefore){
-                    //id发生变化时使用旧id删除
-                    boolean idChanged=rowMap.getOldData(view.getMasterTablePk())!=null;
-                    if(existAfter){//需更新
-                        //因可能更改的是外键字段，先删除再新增
-                        helper.delData4View(view,idChanged ? rowMap.getOldData(view.getMasterTablePk()) : rowMap.getData(view.getMasterTablePk()));
-                        helper.insertData4View(rowMap,view);
-                    }else{//需删除
-                        helper.delData4View(view,idChanged ? rowMap.getOldData(view.getMasterTablePk()) : rowMap.getData(view.getMasterTablePk()));
-                    }
-                }else{
-                    if(existAfter){//需新增
-                        helper.insertData4View(rowMap,view);
-                    }else{//修改前后都不在where范围内不处理
-                    }
-                }
-            }else{
-                //非view主表时，因没有where条件直接尝试更新数据
-                helper.updateData4View(view,rowMap);
+                String whereColSource=helper.getTableViewUpdateSourceCol(rowMap.getTable(),view.getId());
+                helper.emptyData4View(view,rowMap.getTable(),rowMap.getData(whereColSource));
             }
         }
     }

@@ -1,24 +1,18 @@
 package com.jingsky.mv.maxwell.producer;
 
 import com.jingsky.mv.maxwell.row.RowMap;
-import com.jingsky.mv.vo.ColumnInfo;
 import com.jingsky.mv.vo.View;
 import com.jingsky.mv.vo.ViewCol;
 import com.jingsky.mv.vo.ViewLeftJoin;
 import com.jingsky.mv.service.ConfigService;
 import com.jingsky.mv.util.DatabaseService;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.net.URISyntaxException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -62,16 +56,20 @@ public class ViewProducerHelper {
     }
 
     /**
-     * 更新视图中的值
+     * 非主表中数据更新时更新视图中的值
      * @param view 视图
      * @param rowMap 行数据Map
      */
-    public void updateData4View(View view,RowMap rowMap) throws Exception {
+    public void updateUnMasterData4View(View view,RowMap rowMap) throws Exception {
         //视图中的where字段
         String whereCol=getTableViewUpdateId(rowMap.getTable(),view.getId());
         //源表中的where字段
         String whereColSource=getTableViewUpdateSourceCol(rowMap.getTable(),view.getId());
-
+        //当非主表和主表的关联字段在非主表中发生变更时，需要先empty之前的数据
+        Object oldId=rowMap.getOldData(whereColSource);
+        if(oldId!=null){
+            emptyData4View(view,rowMap.getTable(),oldId);
+        }
         List<ViewCol> colList=getViewColsByTable(rowMap.getTable(),view.getId());
         StringBuffer updateSql=new StringBuffer("update "+view.getMvName()+" set ");
         for(ViewCol viewCol : colList){
@@ -90,23 +88,21 @@ public class ViewProducerHelper {
     /**
      * 更新视图中的值为空，用于非主表的数据被删除时
      * @param view 视图
-     * @param rowMap 行数据Map
+     * @param whereColVal 索引字段的值
      */
-    public void emptyData4View(View view,RowMap rowMap) throws Exception {
+    public void emptyData4View(View view,String table,Object whereColVal) throws Exception {
         //视图中的where字段
-        String whereCol=getTableViewUpdateId(rowMap.getTable(),view.getId());
-        //源表中的where字段
-        String whereColSource=getTableViewUpdateSourceCol(rowMap.getTable(),view.getId());
+        String whereCol=getTableViewUpdateId(table,view.getId());
 
-        List<ViewCol> colList=getViewColsByTable(rowMap.getTable(),view.getId());
+        List<ViewCol> colList=getViewColsByTable(table,view.getId());
         StringBuffer updateSql=new StringBuffer("update "+view.getMvName()+" set ");
         for(ViewCol viewCol : colList){
             if(!whereCol.equals(viewCol.getCol())){
                 updateSql.append(viewCol.getCol()+" = null,");
             }
         }
-        String sql=updateSql.substring(0,updateSql.length()-1)+" where "+whereCol+"='"+rowMap.getData(whereColSource)+"'";
-        int num=toDatabaseService.execute(sql);
+        String sql=updateSql.substring(0,updateSql.length()-1)+" where "+whereCol+"= ? ";
+        toDatabaseService.execute(sql,whereColVal);
         log.info("update empty sql:"+sql);
     }
 
@@ -119,10 +115,7 @@ public class ViewProducerHelper {
     public void delData4View(View view,Object id) throws Exception {
         String delSql="delete from "+view.getMvName()+" where "+ConfigService.VIEW_PK+"=?";
         int num=toDatabaseService.execute(delSql,id);
-        log.info("delete sql:"+delSql.substring(0,delSql.length()-1)+id);
-        if(num!=1){
-            throw new RuntimeException("SQL result must 1,but now:"+num+",sql:"+delSql);
-        }
+        log.info("delete sql:"+delSql.substring(0,delSql.length()-1)+id+",executed num:"+num);
     }
 
     /**
