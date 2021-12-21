@@ -79,12 +79,16 @@ public class ViewProducer extends AbstractProducer {
         //获取这个表关联的视图
         List<View> viewList=helper.getViewsByTable(rowMap.getTable());
         for(View view : viewList){
+            //更新的字段不在视图上不处理
+            if(!helper.chkUpdateColInView(rowMap.getTable(),rowMap.getOldData().keySet(),view.getId())){
+                continue;
+            }
+            //非view主表时，因没有where条件直接尝试更新数据
             if(!view.getMasterTable().equals(rowMap.getTable())){
-                //非view主表时，因没有where条件直接尝试更新数据
                 helper.updateUnMasterData4View(view,rowMap);
                 continue;
             }
-            //检查修改后是否在where范围内
+            //主表时检查修改后是否在where范围内
             boolean existAfter=helper.chkDateExistInWhere(rowMap.getTable(),view.getMasterWhereSql(),rowMap.getData());
             //先在view中进行删除，id发生变化时使用旧id删除
             boolean idChanged=rowMap.getOldData(view.getMasterTablePk())!=null;

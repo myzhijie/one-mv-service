@@ -39,6 +39,8 @@ public class ViewProducerHelper {
     private Map<String,List<ViewCol>> tableViewColsMap=new HashMap<>();
     //表视图ID和更新时索引字段和老数据表中字段的对应
     private Map<String,String[]> tableViewUpdateIdMap=new HashMap<>();
+    //视图ID和原始表名原始列名的对应
+    private Map<Integer,Set<String>> viewSourceTableColMap=new HashMap<>();
 
 
     /**
@@ -325,7 +327,28 @@ public class ViewProducerHelper {
         }
         initTableViewColMap(view.getMasterTable(),view);
         initTableViewUpdateIdMap(view);
+        initViewSourceTableColMap(view);
         log.info("Add view:" + view.getMvName());
+    }
+
+    /**
+     * 初始化视图id和源表名源字段的对应
+     * @param view 视图
+     */
+    private void initViewSourceTableColMap(View view) {
+        Set<String> colSet=new HashSet<>();
+        //表主键
+        colSet.add(view.getMasterTable()+view.getMasterTablePk());
+        //列
+        for(ViewCol col : view.getViewColList()){
+            colSet.add(col.getSourceTable()+col.getSourceCol());
+        }
+        //join
+        for(ViewLeftJoin join : view.getViewLeftJoinList()){
+            colSet.add(join.getTable()+join.getJoinCol());
+            colSet.add(view.getMasterTable()+join.getJoinLeftCol());
+        }
+        viewSourceTableColMap.put(view.getId(),colSet);
     }
 
     /**
@@ -346,5 +369,22 @@ public class ViewProducerHelper {
      */
     public String getTableViewUpdateSourceCol(String tableName,Integer viewId){
         return tableViewUpdateIdMap.get(tableName+viewId)[1];
+    }
+
+    /**
+     * 检查更新的字段是否在view的列上
+     * @param table 表名
+     * @param viewId 视图ID
+     * @param changedColSet 被更新的列
+     * @return boolean 是在的 true
+     */
+    public boolean chkUpdateColInView(String table,Set<String> changedColSet,Integer viewId) {
+        Set<String> sourceTableColSet=viewSourceTableColMap.get(viewId);
+        for(String changeCol : changedColSet){
+            if(sourceTableColSet.contains(table+changeCol)){
+                return true;
+            }
+        }
+        return false;
     }
 }
