@@ -1,26 +1,5 @@
-
-
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
-
--- ----------------------------
--- Table structure for t_mv_table_view
--- ----------------------------
-CREATE TABLE `t_mv_table_view` (
-  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '视图表id',
-  `mv_name` varchar(64) NOT NULL COMMENT '视图名称',
-  `cols_json` varchar(512) NOT NULL COMMENT '列的对应json,{''目标列名'':''源表名.字段名''}',
-  `master_table` varchar(64) NOT NULL COMMENT '主表表名',
-  `master_table_pk` varchar(32) NOT NULL COMMENT '主表的主键，必须在目标列中存在映射',
-  `where_sql` varchar(128) NOT NULL COMMENT '主表where语句',
-  `leftJoinJson` text DEFAULT NULL COMMENT 'left join部分,{[table:''table1'',on:{left:''a字段'',right:''b字段''}}],}',
-  `create_by` varchar(45) NOT NULL,
-  `create_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `last_update_by` varchar(45) NOT NULL,
-  `last_update_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `mv_name_uni` (`mv_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Table structure for t_mv_well_bootstrap
