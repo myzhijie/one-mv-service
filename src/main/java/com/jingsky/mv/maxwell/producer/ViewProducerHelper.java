@@ -7,10 +7,10 @@ import com.jingsky.mv.vo.ViewLeftJoin;
 import com.jingsky.mv.service.ConfigService;
 import com.jingsky.mv.util.DatabaseService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.net.URISyntaxException;
 import java.sql.SQLException;
@@ -161,7 +161,7 @@ public class ViewProducerHelper {
         //查询SQL看是否可以匹配
         String sql="select * from "+table+tmpTableSub+" where "+whereSql;
         List<Map<String, Object>> results = fromDatabaseService.query(sql);
-        return CollectionUtils.isNotEmpty(results);
+        return !CollectionUtils.isEmpty(results);
     }
 
     /**

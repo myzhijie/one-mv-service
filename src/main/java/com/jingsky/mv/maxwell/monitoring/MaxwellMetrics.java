@@ -13,7 +13,7 @@ import com.viafoura.metrics.datadog.transport.Transport;
 import com.viafoura.metrics.datadog.transport.UdpTransport;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.dropwizard.DropwizardExports;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

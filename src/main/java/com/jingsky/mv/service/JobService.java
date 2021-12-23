@@ -8,11 +8,12 @@ import com.jingsky.mv.maxwell.producer.ViewProducerHelper;
 import com.jingsky.mv.util.DatabaseService;
 import com.jingsky.mv.util.exception.BootstrapException;
 import com.jingsky.mv.util.exception.IncrementException;
-import com.jingsky.util.common.CollectionUtil;
+import com.mchange.v1.util.ArrayUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -114,9 +115,9 @@ public class JobService extends Thread {
         argsList.add("--output_ddl=true");
         argsList.add("--bootstrapper=sync");
         argsList.add("--client_id=" + TablePrefixConfig.getClientId());
-        String[] args = CollectionUtil.toArray(argsList.iterator());
-        MaxwellConfig config = new MaxwellConfig(args);
 
+        String[] args = (String[]) argsList.toArray();
+        MaxwellConfig config = new MaxwellConfig(args);
         maxwell = new Maxwell(config);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> maxwell.terminate()));
         maxwell.start();

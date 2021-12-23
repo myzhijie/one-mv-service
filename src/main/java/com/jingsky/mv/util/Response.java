@@ -1,29 +1,17 @@
 package com.jingsky.mv.util;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
 
-@ApiModel("返回体")
 @Data
 public class Response<T> implements Serializable {
     private static final long serialVersionUID = 1L;
-    @ApiModelProperty(
-            value = "状态码(1成功，0失败，2警告)",
-            example = "1"
-    )
+    //状态码(1成功，0失败，2警告)
     private int code;
-    @ApiModelProperty(
-            value = "消息(一般失败或警告时有)",
-            example = "1"
-    )
+    //消息(一般失败或警告时有)
     private String msg;
-    @ApiModelProperty(
-            value = "数据体",
-            example = "{name:123}"
-    )
+    //数据体
     private T data;
 
     public Response(){

@@ -4,12 +4,12 @@ import com.jingsky.mv.vo.ColumnInfo;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.BasicRowProcessor;
 import org.apache.commons.dbutils.GenerousBeanProcessor;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
+import org.springframework.util.CollectionUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -53,7 +53,7 @@ public class DatabaseService {
     public ColumnInfo getColumnInfo(String tableName, String column) throws SQLException, URISyntaxException {
         String sql="show full columns from "+tableName+" like '"+column+"';";
         List<ColumnInfo> mapList=query(sql,ColumnInfo.class);
-        return CollectionUtils.isNotEmpty(mapList) ? mapList.get(0) : null;
+        return CollectionUtils.isEmpty(mapList) ? null : mapList.get(0);
     }
 
     /**

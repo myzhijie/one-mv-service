@@ -8,9 +8,9 @@ import com.jingsky.mv.maxwell.row.RowMap;
 import com.jingsky.mv.maxwell.row.RowMapBuffer;
 import com.jingsky.mv.util.exception.BootstrapException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -71,7 +71,7 @@ public class BootstrapController extends RunLoopProcess {
 	private void doWork() throws Exception {
 		List<BootstrapTask> tasks = getIncompleteTasks();
 		synchronized(bootstrapMutex) {
-			if(CollectionUtils.isNotEmpty(tasks)){
+			if(!CollectionUtils.isEmpty(tasks)){
 				startBootstrap(tasks);
 			}
 		}

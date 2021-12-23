@@ -3,7 +3,6 @@ package com.jingsky.mv.maxwell.bootstrap;
 import com.jingsky.mv.config.TablePrefixConfig;
 import com.jingsky.mv.maxwell.schema.Database;
 import com.jingsky.mv.maxwell.schema.SchemaCapturer;
-import com.jingsky.mv.maxwell.schema.columndef.*;
 import com.jingsky.mv.maxwell.schema.columndef.ColumnDef;
 import com.jingsky.mv.maxwell.schema.columndef.ColumnDefCastException;
 import com.jingsky.mv.maxwell.schema.columndef.DateColumnDef;
@@ -18,14 +17,16 @@ import com.jingsky.mv.maxwell.producer.AbstractProducer;
 import com.jingsky.mv.maxwell.row.RowMap;
 import com.jingsky.mv.maxwell.schema.Schema;
 import com.jingsky.mv.maxwell.schema.Table;
-import com.jingsky.util.common.DateUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URISyntaxException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -255,9 +256,9 @@ public class SynchronousBootstrapper {
 			Object columnValue;
 			// need to explicitly coerce TIME into TIMESTAMP in order to preserve nanoseconds
 			if (columnType==92)
-				columnValue = new DateUtil(resultSet.getTimestamp(i)).toShortDate();
+				columnValue = DateFormatUtils.format(resultSet.getTimestamp(i),"yyyy-MM-dd");
 			else if (columnType==93)
-				columnValue = new DateUtil(resultSet.getTimestamp(i)).toLongDate();
+				columnValue = DateFormatUtils.format(resultSet.getTimestamp(i),"yyyy-MM-dd HH:mm:ss");
 			else if (columnType==91)
 				columnValue = resultSet.getString(i);
 			else

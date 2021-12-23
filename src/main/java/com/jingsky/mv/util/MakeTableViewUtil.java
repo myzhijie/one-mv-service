@@ -3,7 +3,6 @@ package com.jingsky.mv.util;
 import com.jingsky.mv.vo.View;
 import com.jingsky.mv.vo.ViewCol;
 import com.jingsky.mv.vo.ViewLeftJoin;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,10 +46,11 @@ public class MakeTableViewUtil {
     }
 
     public static String makeInsertTableViewSql(View view){
-        JSONObject jsonObject=new JSONObject(view);
-        StringBuffer sb=new StringBuffer("insert into t_mv_table_view(id,mv_name,cols_json,master_table,master_table_pk,where_sql,leftJoinJson,create_by,last_update_by) values (");
-        sb.append("'"+view.getId()+"','"+view.getMvName()+"','"+jsonObject.getJSONArray("viewColList")+"','"+view.getMasterTable()+"','"+view.getMasterTablePk()+"',\""+view.getMasterWhereSql()+"\",'"+jsonObject.getJSONArray("viewLeftJoinList")+"','mark','mark')");
-        return sb.toString();
+//        JSONObject jsonObject=new JSONObject(view);
+//        StringBuffer sb=new StringBuffer("insert into t_mv_table_view(id,mv_name,cols_json,master_table,master_table_pk,where_sql,leftJoinJson,create_by,last_update_by) values (");
+//        sb.append("'"+view.getId()+"','"+view.getMvName()+"','"+jsonObject.getJSONArray("viewColList")+"','"+view.getMasterTable()+"','"+view.getMasterTablePk()+"',\""+view.getMasterWhereSql()+"\",'"+jsonObject.getJSONArray("viewLeftJoinList")+"','mark','mark')");
+//        return sb.toString();
+        return null;
     }
 
 }

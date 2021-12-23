@@ -1,17 +1,14 @@
 package com.jingsky.mv.vo;
 
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 import com.jingsky.mv.service.ConfigService;
-import com.jingsky.mv.util.DatabaseService;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 视图类,非数据表
@@ -42,9 +39,9 @@ public class View {
         this.masterTablePk=tableView.getMasterTablePk();
         this.masterWhereSql=tableView.getWhereSql();
 
-        this.viewColList =JSON.parseArray(tableView.getColsJson(), ViewCol.class);
-        this.viewLeftJoinList=JSON.parseArray(tableView.getLeftJoinJson(),ViewLeftJoin.class);
-
+        Gson gson=new Gson();
+        this.viewColList =gson.fromJson(tableView.getColsJson(), List.class);
+        this.viewLeftJoinList =gson.fromJson(tableView.getLeftJoinJson(), List.class);
         makeSourceSql();
     }
 

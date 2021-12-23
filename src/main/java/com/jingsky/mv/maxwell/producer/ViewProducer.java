@@ -1,7 +1,6 @@
 package com.jingsky.mv.maxwell.producer;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.Gson;
 import com.jingsky.mv.maxwell.MaxwellContext;
 import com.jingsky.mv.maxwell.row.RowMap;
 import com.jingsky.mv.vo.View;
@@ -10,7 +9,6 @@ import com.jingsky.mv.util.exception.BootstrapException;
 import com.jingsky.mv.util.exception.IncrementException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -25,15 +23,14 @@ public class ViewProducer extends AbstractProducer {
     //用来记录bootstrap的总条数
     ThreadLocal<Integer> bootstrapNum = ThreadLocal.withInitial(() -> new Integer(0));
 
-    public ViewProducer(MaxwellContext context) throws IOException{
+    public ViewProducer(MaxwellContext context){
         super(context);
     }
 
     @Override
     public void push(RowMap r) throws Exception {
-        JSONObject jsonObject = JSON.parseObject(r.toJSON(outputConfig));
-        //查询变动类型
-        String type = jsonObject.getString("type");
+        //变动类型
+        String type = r.getRowType();
         //必须是视图中存在的表才进行处理
         if(!helper.chkTableInView(r.getTable())) {
             context.setPosition(r);
@@ -61,9 +58,9 @@ public class ViewProducer extends AbstractProducer {
                 handleDelete(r);
             }else if (type.equals("table-create") || type.equals("table-drop") || type.equals("table-alter")){
                 //do nothing
-                log.info("Table-create|drop|alter:"+jsonObject);
+                log.info("Table-create|drop|alter:"+ r.toJSON());
             } else {
-                throw new RuntimeException("Unknown RowMap type:" + type + ",rowMap:" + jsonObject);
+                throw new RuntimeException("Unknown RowMap type:" + type + ",rowMap:" + r.toJSON());
             }
         }catch (Exception exception){
             throw new IncrementException(r,exception);
