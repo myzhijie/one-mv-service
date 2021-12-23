@@ -116,7 +116,7 @@ public class JobService extends Thread {
         argsList.add("--bootstrapper=sync");
         argsList.add("--client_id=" + TablePrefixConfig.getClientId());
 
-        String[] args = (String[]) argsList.toArray();
+        String[] args = argsList.toArray(new String[0]);
         MaxwellConfig config = new MaxwellConfig(args);
         maxwell = new Maxwell(config);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> maxwell.terminate()));

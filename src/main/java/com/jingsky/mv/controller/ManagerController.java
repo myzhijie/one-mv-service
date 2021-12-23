@@ -1,5 +1,6 @@
 package com.jingsky.mv.controller;
 
+import com.jingsky.mv.config.ViewsConfig;
 import com.jingsky.mv.service.ConfigService;
 import com.jingsky.mv.service.JobService;
 import com.jingsky.mv.util.Response;
@@ -21,6 +22,8 @@ public class ManagerController {
     @Autowired
     private JobService jobService;
     @Autowired
+    private ViewsConfig viewsConfig;
+    @Autowired
     private ConfigService configService;
 
     /**
@@ -32,7 +35,7 @@ public class ManagerController {
     public Response configInfo() throws Exception {
         Map<String,Object> result=new HashMap<>();
 
-        List<View> viewList=configService.getAllView();
+        List<View> viewList=viewsConfig.getViews();
         result.put("viewList",viewList);
         for(View view : viewList){
             result.put(view.getMvName()+" CreateViewSql",configService.makeCreateViewSql(view));

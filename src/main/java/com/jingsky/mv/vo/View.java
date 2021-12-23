@@ -1,11 +1,11 @@
 package com.jingsky.mv.vo;
 
-import com.google.gson.Gson;
 import com.jingsky.mv.service.ConfigService;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,34 +16,44 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class View {
+    /**
+     * 视图ID，数字
+     */
     private Integer id;
-    //视图表名
+    /**
+     * 视图表名
+     */
     private String mvName;
-    //目标列名
-    private List<ViewCol> viewColList;
-    //主表名
+    /**
+     * 视图对应主表名
+     */
     private String masterTable;
-    //主表主键ID
+    /**
+     * 视图中主表主键ID
+     */
     private String masterTablePk;
-    //主表where条件
-    private String masterWhereSql;
-    //left join的所有表
+    /**
+     * 视图中主表where条件
+     */
+    private String masterWhereSql="";
+    /**
+     * 视图中的列
+     */
+    private List<ViewCol> viewColList;
+    /**
+     * left join的所有表
+     */
     private List<ViewLeftJoin> viewLeftJoinList;
+
+    //以下字段不需要在配置文件中初始化
+    /**
+     * 配置文件中不需要配置
+     */
     private String sourceSql;
+    /**
+     * 配置文件中不需要配置
+     */
     private long current=System.currentTimeMillis();
-
-    public View(TableView tableView){
-        this.id=tableView.getId();
-        this.mvName=tableView.getMvName();
-        this.masterTable=tableView.getMasterTable();
-        this.masterTablePk=tableView.getMasterTablePk();
-        this.masterWhereSql=tableView.getWhereSql();
-
-        Gson gson=new Gson();
-        this.viewColList =gson.fromJson(tableView.getColsJson(), List.class);
-        this.viewLeftJoinList =gson.fromJson(tableView.getLeftJoinJson(), List.class);
-        makeSourceSql();
-    }
 
     /**
      * 生成数据源SQL，public只是为了test代码好执行

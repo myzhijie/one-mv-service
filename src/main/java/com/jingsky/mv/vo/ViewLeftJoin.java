@@ -9,11 +9,17 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class ViewLeftJoin {
-    //表名
+    /**
+     * 被left join的表名
+     */
     private String table;
-    //join时左表的字段
+    /**
+     * join时主表中的字段
+     */
     private String joinLeftCol;
-    //join时当前表的字段
+    /**
+     * 被left join的表中的字段
+     */
     private String joinCol;
 
     public ViewLeftJoin(String table,String joinLeftCol,String joinCol){

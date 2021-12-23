@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: one-mv-service
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+  #数据库连接配置
+  hikari:
+    from:
+      jdbc-url: jdbc:mysql://sh-cdb-b2gvjfuq.sql.tencentcdb.com:59335/one?characterEncoding=utf-8&useSSL=false
+      username: one
+      password: One7777&
+    to:
+      jdbc-url: jdbc:mysql://one.jingsky.com:3306/one?characterEncoding=utf-8&useSSL=false
+      username: one
+      password: One6666^
+  views:
+    - id: 1
+      mvName: t_login_mv
+      masterTable: t_user_login
+      masterTablePk: id
+      masterWhereSql: "login_time>'2021-12-21 00:00:00'"
+      viewColList:
+        - col: user_name
+          sourceTable: t_user
+          sourceCol: name
+        - col: user_info
+          sourceTable: t_user
+          sourceCol: info
+        - col: role_name
+          sourceTable: t_role
+          sourceCol: name
+        - col: login_time
+          sourceTable: t_user_login
+          sourceCol: login_time
+        - col: note
+          sourceTable: t_user_login
+          sourceCol: login_note
+      viewLeftJoinList:
+        - table: t_user
+          joinLeftCol: user_id
+          joinCol: id
+        - table: t_role
+          joinLeftCol: role_id
+          joinCol: id
+

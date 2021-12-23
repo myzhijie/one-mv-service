@@ -9,17 +9,22 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class ViewCol {
+    /**
+     * 视图中的列名
+     */
+    private String col;
+    /**
+     * 源表名
+     */
+    private String sourceTable;
+    /**
+     * 源列名
+     */
+    private String sourceCol;
 
     public ViewCol(String col,String sourceTable,String sourceCol){
         this.col=col;
         this.sourceTable=sourceTable;
         this.sourceCol=sourceCol;
     }
-
-    //列名
-    private String col;
-    //源表
-    private String sourceTable;
-    //源列
-    private String sourceCol;
 }

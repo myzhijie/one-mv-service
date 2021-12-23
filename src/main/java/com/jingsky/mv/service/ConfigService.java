@@ -1,6 +1,7 @@
 package com.jingsky.mv.service;
 
 import com.jingsky.mv.config.TablePrefixConfig;
+import com.jingsky.mv.config.ViewsConfig;
 import com.jingsky.mv.util.DatabaseService;
 import com.jingsky.mv.vo.*;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,8 @@ public class ConfigService {
     private DatabaseService toDatabaseService;
     @Autowired
     private DatabaseService fromDatabaseService;
+    @Autowired
+    private ViewsConfig viewsConfig;
     //视图的主键名
     public static final String VIEW_PK="id";
 
@@ -33,15 +36,12 @@ public class ConfigService {
     public void insertBootstrapTable() throws Exception {
         List<Map<String, Object>> bootstrapMapList = findStartAndUnCompleteBootstrap();
         for (Map<String, Object> map : bootstrapMapList) {
-            //删除对应视图中的数据
-            TableView tableView = findById("table_view", map.get("id"), TableView.class);
-            toDatabaseService.execute("delete from " + tableView.getMvName());
             //从bootstrap表中删除此数据
             deleteById(TablePrefixConfig.getTablePrefix()+"well_bootstrap", map.get("id"));
         }
 
         //将不存在的表循环插入到bootstrap表中
-        List<View> viewsList = getAllView();
+        List<View> viewsList = viewsConfig.getViews();
         for (View view : viewsList) {
             //bootstrap表中已经存在的不插入
             Object bootstrapDb = findById("well_bootstrap", view.getId(), Object.class);
@@ -107,20 +107,6 @@ public class ConfigService {
     }
 
     /**
-     * 获取所有视图
-     *
-     * @return List<View>
-     */
-    public List<View> getAllView() throws SQLException, URISyntaxException {
-        List<View> viewList = new ArrayList<>();
-        List<TableView> tableViewList = findAllView();
-        for (TableView tableView : tableViewList) {
-            viewList.add(new View(tableView));
-        }
-        return viewList;
-    }
-
-    /**
      * 获取启动但是未bootstrap完成的任务
      *
      * @return List<Map < String, Object>>
@@ -130,18 +116,6 @@ public class ConfigService {
     public List<Map<String, Object>> findStartAndUnCompleteBootstrap() throws SQLException, URISyntaxException {
         String sql = "select * from " + TablePrefixConfig.getTablePrefix()+"well_bootstrap where is_complete=0 and started_at is not null";
         return toDatabaseService.query(sql);
-    }
-
-    /**
-     * 获取所有视图配置
-     *
-     * @return
-     * @throws SQLException
-     * @throws URISyntaxException
-     */
-    public List<TableView> findAllView() throws SQLException, URISyntaxException {
-        List<TableView> tableViewList = toDatabaseService.query("select * from " + TablePrefixConfig.getTablePrefix()+"table_view", TableView.class);
-        return tableViewList;
     }
 
     /**

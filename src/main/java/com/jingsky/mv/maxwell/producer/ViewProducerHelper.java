@@ -1,5 +1,6 @@
 package com.jingsky.mv.maxwell.producer;
 
+import com.jingsky.mv.config.ViewsConfig;
 import com.jingsky.mv.maxwell.row.RowMap;
 import com.jingsky.mv.vo.View;
 import com.jingsky.mv.vo.ViewCol;
@@ -30,7 +31,7 @@ public class ViewProducerHelper {
     private DatabaseService fromDatabaseService;
     //视图在数据表中配置的Dao
     @Autowired
-    private ConfigService configService;
+    private ViewsConfig viewsConfig;
     //需要进行处理的全量表
     private Map<String, View> bootstrapTableMap = new HashMap<>();
     //表和涉及到视图的对应
@@ -265,7 +266,7 @@ public class ViewProducerHelper {
     /**
      * 初始化关于视图的数据
      */
-    public void initViewsData() throws SQLException, URISyntaxException {
+    public void initViewsData(){
         //先清理这里共享变量
         bootstrapTableMap = new HashMap<>();
         //表和涉及到视图的对应
@@ -275,7 +276,7 @@ public class ViewProducerHelper {
         //表视图ID和更新时索引字段的对应
         tableViewUpdateIdMap=new HashMap<>();
         //初始化所有视图
-        List<View> viewList=configService.getAllView();
+        List<View> viewList=viewsConfig.getViews();
         for(View view : viewList) {
             initViewData(view);
         }

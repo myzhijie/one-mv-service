@@ -3,7 +3,6 @@ package com.jingsky.mv.config;
 import com.jingsky.mv.util.DatabaseService;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
