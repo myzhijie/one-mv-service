@@ -4,8 +4,6 @@ import com.jingsky.mv.service.ConfigService;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,10 +57,7 @@ public class View {
      * 生成数据源SQL，public只是为了test代码好执行
      * @return String
      */
-    public String makeSourceSql(){
-        if(sourceSql!=null){
-            return sourceSql;
-        }
+    private void makeSourceSql(){
         //列中的字段收集，源表+源字段
         List<String> colList=new ArrayList<>();
         StringBuffer sb=new StringBuffer("select \n");
@@ -100,8 +95,14 @@ public class View {
         }
         sb.append("\n");
         sb.append("order by "+this.masterTable+"."+this.masterTablePk);
-        sourceSql=sb.toString();
-        return sourceSql;
+        this.sourceSql= sb.toString();;
+    }
+
+    public String getSourceSql(){
+        if(this.sourceSql==null){
+            makeSourceSql();
+        }
+        return this.sourceSql;
     }
 
     /**
@@ -110,6 +111,6 @@ public class View {
      * @return String
      */
     public String tmpAddIdToMasterWhere(String id){
-        return sourceSql.replaceAll(current+"="+current,masterTable+"."+masterTablePk+"='"+id+"'");
+        return getSourceSql().replaceAll(current+"="+current,masterTable+"."+masterTablePk+"='"+id+"'");
     }
 }
