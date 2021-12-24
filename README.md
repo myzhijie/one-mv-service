@@ -29,4 +29,7 @@
 4. 目标库中的视图表为被自动创建；
 
 
+项目中主要引用框架（致敬）：
+1. Maxwell ，参考：https://github.com/zendesk/maxwell
+2. Spring boot 2.1.6 ，参考：https://spring.io/projects/spring-boot
 
