@@ -12,19 +12,13 @@ public class ViewLeftJoin {
     /**
      * 被left join的表名
      */
-    private String table;
-    /**
-     * join时主表中的字段
-     */
-    private String joinLeftCol;
+    private String joinTable;
     /**
      * 被left join的表中的字段
      */
     private String joinCol;
-
-    public ViewLeftJoin(String table,String joinLeftCol,String joinCol){
-        this.table=table;
-        this.joinLeftCol=joinLeftCol;
-        this.joinCol=joinCol;
-    }
+    /**
+     * join时主表中的字段
+     */
+    private String masterTableCol;
 }

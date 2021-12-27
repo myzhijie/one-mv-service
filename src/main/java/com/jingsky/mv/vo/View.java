@@ -35,6 +35,10 @@ public class View {
      */
     private String masterWhereSql="";
     /**
+     * 视图中主表GroupBy,非必填
+     */
+    private String masterGroupBy="";
+    /**
      * 视图中的列
      */
     private List<ViewCol> viewColList;
@@ -54,7 +58,7 @@ public class View {
     private long current=System.currentTimeMillis();
 
     /**
-     * 生成数据源SQL，public只是为了test代码好执行
+     * 生成数据源SQL
      * @return String
      */
     private void makeSourceSql(){
@@ -62,20 +66,26 @@ public class View {
         List<String> colList=new ArrayList<>();
         StringBuffer sb=new StringBuffer("select \n");
         //首先拼接上主键
-        sb.append("    "+masterTable+"."+masterTablePk+" as "+ ConfigService.VIEW_PK +",\n");
+        String pkCol=getMasterGroupBy()==null ? getMasterTablePk():getMasterGroupBy();
+        sb.append("    "+masterTable+"."+pkCol+" as "+ ConfigService.VIEW_PK +",\n");
         //拼接列
         for(ViewCol col : this.viewColList){
-            //主键不再重复添加
-            if(col.getSourceTable().equals(masterTable) && col.getSourceCol().equals(masterTablePk)){
-                continue;
+            //聚合函数时
+            if(col.getAggregateFunction()!=null){
+                sb.append("    "+col.getAggregateFunction()+"("+masterTable+"."+col.getSourceCol()+")"+" as "+col.getCol()+",\n");
+            }else {
+                //主键不再重复添加
+                if(masterTable.equals(col.getSourceTable()) && pkCol.equals(col.getSourceCol())){
+                    continue;
+                }
+                sb.append("    " + col.getSourceTable() + "." + col.getSourceCol() + " as " + col.getCol() + ",\n");
             }
-            sb.append("    "+col.getSourceTable()+"."+col.getSourceCol()+" as "+col.getCol()+",\n");
             colList.add(col.getSourceTable()+"_"+col.getSourceCol());
         }
         //拼接上join关联的字段
         for(ViewLeftJoin leftJoin : this.viewLeftJoinList){
-            if(!colList.contains(leftJoin.getTable()+"_"+leftJoin.getJoinCol())) {
-                sb.append("    " + leftJoin.getTable() + "." + leftJoin.getJoinCol() + " as " + leftJoin.getTable() + "_" + leftJoin.getJoinCol() + ",\n");
+            if(!colList.contains(leftJoin.getJoinTable()+"_"+leftJoin.getJoinCol())) {
+                sb.append("    " + leftJoin.getJoinTable() + "." + leftJoin.getJoinCol() + " as " + leftJoin.getJoinTable() + "_" + leftJoin.getJoinCol() + ",\n");
             }
         }
         //去掉最后一个多余的,
@@ -85,8 +95,8 @@ public class View {
         sb.append("\n");
         //拼接left join
         for(ViewLeftJoin leftJoin : this.viewLeftJoinList){
-            sb.append("left join "+leftJoin.getTable());
-            sb.append(" on "+masterTable+"."+leftJoin.getJoinLeftCol()+"="+leftJoin.getTable()+"."+leftJoin.getJoinCol());
+            sb.append("left join "+leftJoin.getJoinTable());
+            sb.append(" on "+masterTable+"."+leftJoin.getMasterTableCol()+"="+leftJoin.getJoinTable()+"."+leftJoin.getJoinCol());
             sb.append("\n");
         }
         sb.append("where "+current+"="+current);
@@ -94,7 +104,12 @@ public class View {
             sb.append(" and (" +masterWhereSql+")");
         }
         sb.append("\n");
-        sb.append("order by "+this.masterTable+"."+this.masterTablePk);
+        if(masterGroupBy!=null){
+            sb.append("group by "+masterTable+"."+masterGroupBy+"\n");
+            sb.append("order by "+masterTable+"."+masterGroupBy);
+        }else {
+            sb.append("order by " + masterTable + "." + masterTablePk);
+        }
         this.sourceSql= sb.toString();;
     }
 

@@ -14,6 +14,33 @@ spring:
       username: one
       password: One6666^
   views:
+    - id: 2
+      mvName: t_login_group_mv
+      masterTable: t_user_login
+      masterTablePk: id
+      masterWhereSql: "login_time>'2021-12-21 00:00:00'"
+      masterGroupBy: user_id
+      viewColList:
+        - col: user_name
+          sourceTable: t_user
+          sourceCol: name
+        - col: user_info
+          sourceTable: t_user
+          sourceCol: info
+        - col: role_name
+          sourceTable: t_role
+          sourceCol: name
+        - col: nums
+          aggregateFunction: SUM
+          sourceTable: t_user_login
+          sourceCol: user_id
+      viewLeftJoinList:
+        - joinTable: t_user
+          masterTableCol: user_id
+          joinCol: id
+        - joinTable: t_role
+          masterTableCol: role_id
+          joinCol: id
     - id: 1
       mvName: t_login_mv
       masterTable: t_user_login
@@ -36,10 +63,10 @@ spring:
           sourceTable: t_user_login
           sourceCol: login_note
       viewLeftJoinList:
-        - table: t_user
-          joinLeftCol: user_id
+        - joinTable: t_user
+          masterTableCol: user_id
           joinCol: id
-        - table: t_role
-          joinLeftCol: role_id
+        - joinTable: t_role
+          masterTableCol: role_id
           joinCol: id
 

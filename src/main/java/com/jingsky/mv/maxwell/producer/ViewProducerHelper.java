@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -293,11 +292,11 @@ public class ViewProducerHelper {
             colMap.put(col.getSourceTable()+"_"+col.getSourceCol(),col.getCol());
         }
         for(ViewLeftJoin leftJoin : view.getViewLeftJoinList()){
-            String tableColName=leftJoin.getTable()+"_"+leftJoin.getJoinCol();
+            String tableColName=leftJoin.getJoinTable()+"_"+leftJoin.getJoinCol();
             if(colMap.keySet().contains(tableColName)) {
-                this.tableViewUpdateIdMap.put(leftJoin.getTable()+view.getId(),new String[]{colMap.get(tableColName),leftJoin.getJoinCol()});
+                this.tableViewUpdateIdMap.put(leftJoin.getJoinTable()+view.getId(),new String[]{colMap.get(tableColName),leftJoin.getJoinCol()});
             }else{
-                this.tableViewUpdateIdMap.put(leftJoin.getTable()+view.getId(),new String[]{tableColName,leftJoin.getJoinCol()});
+                this.tableViewUpdateIdMap.put(leftJoin.getJoinTable()+view.getId(),new String[]{tableColName,leftJoin.getJoinCol()});
             }
         }
         //记录master表主键
@@ -318,13 +317,13 @@ public class ViewProducerHelper {
         viewListTmp.add(view);
         tableViewsMap.put(view.getMasterTable(),viewListTmp);
         for(ViewLeftJoin viewLeftJoin : view.getViewLeftJoinList()){
-            List<View> viewListJoin=tableViewsMap.get(viewLeftJoin.getTable());
+            List<View> viewListJoin=tableViewsMap.get(viewLeftJoin.getJoinTable());
             if(viewListJoin==null){
                 viewListJoin=new ArrayList<>();
             }
             viewListJoin.add(view);
-            tableViewsMap.put(viewLeftJoin.getTable(),viewListJoin);
-            initTableViewColMap(viewLeftJoin.getTable(),view);
+            tableViewsMap.put(viewLeftJoin.getJoinTable(),viewListJoin);
+            initTableViewColMap(viewLeftJoin.getJoinTable(),view);
         }
         initTableViewColMap(view.getMasterTable(),view);
         initTableViewUpdateIdMap(view);
@@ -346,8 +345,8 @@ public class ViewProducerHelper {
         }
         //join
         for(ViewLeftJoin join : view.getViewLeftJoinList()){
-            colSet.add(join.getTable()+join.getJoinCol());
-            colSet.add(view.getMasterTable()+join.getJoinLeftCol());
+            colSet.add(join.getJoinTable()+join.getJoinCol());
+            colSet.add(view.getMasterTable()+join.getMasterTableCol());
         }
         viewSourceTableColMap.put(view.getId(),colSet);
     }

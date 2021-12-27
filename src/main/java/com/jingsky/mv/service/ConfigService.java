@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.net.URISyntaxException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,26 +74,32 @@ public class ConfigService {
         Map<String,String> colMap=new HashMap<>();
         StringBuffer sb=new StringBuffer("CREATE TABLE IF NOT EXISTS `"+view.getMvName()+"` ( \n");
         //首先生成id
-        ColumnInfo columnInfo=fromDatabaseService.getColumnInfo(view.getMasterTable(),view.getMasterTablePk());
-        sb.append("    `"+ConfigService.VIEW_PK+"` "+columnInfo.getType()+" NOT NULL COMMENT '"+view.getMasterTable()+":"+view.getMasterTablePk()+",不可修改',\n");
+        String pkCol=view.getMasterGroupBy()==null ? view.getMasterTablePk():view.getMasterGroupBy();
+        ColumnInfo columnInfo = fromDatabaseService.getColumnInfo(view.getMasterTable(),pkCol);
+        sb.append("    `" + ConfigService.VIEW_PK + "` " + columnInfo.getType() + " NOT NULL COMMENT 'PK,不可修改',\n");
         //拼接列
         for(ViewCol col : view.getViewColList()){
-            //主键不再重复添加
-            if(col.getSourceTable().equals(view.getMasterTable()) && col.getSourceCol().equals(view.getMasterTablePk())){
-                continue;
+            //聚合函数时
+            if(col.getAggregateFunction()!=null){
+                sb.append("    `"+col.getCol()+"` int DEFAULT NULL COMMENT '"+col.getAggregateFunction()+"("+col.getSourceCol()+")',\n");
+            }else {
+                //主键不再重复添加
+                if(view.getMasterTable().equals(col.getSourceTable()) && col.getSourceCol().equals(pkCol)){
+                    continue;
+                }
+                columnInfo=fromDatabaseService.getColumnInfo(col.getSourceTable(),col.getSourceCol());
+                sb.append("    `"+col.getCol()+"` "+columnInfo.getType()+" DEFAULT NULL COMMENT '"+columnInfo.getComment()+"',\n");
+                colMap.put(col.getSourceTable()+"_"+col.getSourceCol(),col.getCol());
             }
-            columnInfo=fromDatabaseService.getColumnInfo(col.getSourceTable(),col.getSourceCol());
-            sb.append("    `"+col.getCol()+"` "+columnInfo.getType()+" DEFAULT NULL COMMENT '"+columnInfo.getComment()+"',\n");
-            colMap.put(col.getSourceTable()+"_"+col.getSourceCol(),col.getCol());
         }
         //拼接left join
         for(ViewLeftJoin leftJoin : view.getViewLeftJoinList()){
-            String tableColName=leftJoin.getTable()+"_"+leftJoin.getJoinCol();
+            String tableColName=leftJoin.getJoinTable()+"_"+leftJoin.getJoinCol();
             //已经存在的列不需要增加
             if(colMap.keySet().contains(tableColName)) {
                 sb.append("    KEY `key_"+colMap.get(tableColName)+"` (`"+colMap.get(tableColName)+"`),\n");
             }else{
-                columnInfo=fromDatabaseService.getColumnInfo(leftJoin.getTable(),leftJoin.getJoinCol());
+                columnInfo=fromDatabaseService.getColumnInfo(leftJoin.getJoinTable(),leftJoin.getJoinCol());
                 sb.append("    `" +tableColName+ "` "+columnInfo.getType());
                 sb.append(" DEFAULT NULL COMMENT '"+columnInfo.getComment()+"',\n");
                 sb.append("    KEY `key_"+tableColName+"` (`"+tableColName+"`),\n");

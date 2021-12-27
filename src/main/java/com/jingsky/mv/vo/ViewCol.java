@@ -21,10 +21,8 @@ public class ViewCol {
      * 源列名
      */
     private String sourceCol;
-
-    public ViewCol(String col,String sourceTable,String sourceCol){
-        this.col=col;
-        this.sourceTable=sourceTable;
-        this.sourceCol=sourceCol;
-    }
+    /**
+     * 聚合函数，只能avg,count,min,max,sum
+     */
+    private String aggregateFunction;
 }
