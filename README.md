@@ -28,5 +28,9 @@
 3. 启动项目，访问 http://localhost:8080/manager/start-transfer 即可；
 4. 目标库中的视图表为被自动创建；
 
+项目中主要引用框架（致敬）：
+
+Maxwell ，参考：https://github.com/zendesk/maxwell
+Spring boot 2.1.6 ，参考：https://spring.io/projects/spring-boot
 
 
