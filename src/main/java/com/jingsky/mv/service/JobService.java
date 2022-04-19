@@ -4,16 +4,13 @@ import com.jingsky.mv.config.GlobalHandler;
 import com.jingsky.mv.config.TablePrefixConfig;
 import com.jingsky.mv.maxwell.Maxwell;
 import com.jingsky.mv.maxwell.MaxwellConfig;
-import com.jingsky.mv.maxwell.producer.ViewProducerHelper;
 import com.jingsky.mv.util.DatabaseService;
 import com.jingsky.mv.util.exception.BootstrapException;
 import com.jingsky.mv.util.exception.IncrementException;
-import com.mchange.v1.util.ArrayUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +27,6 @@ public class JobService extends Thread {
     @Autowired
     private ConfigService configService;
     @Autowired
-    private ViewProducerHelper viewProducerHelper;
-    @Autowired
     private DatabaseService fromDatabaseService;
     @Autowired
     private DatabaseService toDatabaseService;
@@ -47,8 +42,6 @@ public class JobService extends Thread {
      * @return
      */
     public void startTransfer() throws Exception {
-        //插入bootstrap表
-        configService.insertBootstrapTable();
         //标记调整为非终止
         setTerminate(false);
         //开始任务
@@ -64,8 +57,6 @@ public class JobService extends Thread {
             try {
                 //开始全量数据迁移和数据增量同步
                 if (!terminate) {
-                    //初始化helper
-                    viewProducerHelper.initViewsData();
                     //启动maxwell
                     startBootstrapAndConsume();
                 }

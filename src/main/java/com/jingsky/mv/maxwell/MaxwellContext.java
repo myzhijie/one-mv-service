@@ -4,13 +4,9 @@ import com.jingsky.mv.config.GlobalHandler;
 import com.jingsky.mv.maxwell.bootstrap.BootstrapController;
 import com.jingsky.mv.maxwell.bootstrap.SynchronousBootstrapper;
 import com.jingsky.mv.maxwell.monitoring.*;
-import com.jingsky.mv.maxwell.producer.*;
 import com.jingsky.mv.maxwell.replication.*;
-import com.jingsky.mv.maxwell.monitoring.*;
 import com.jingsky.mv.maxwell.producer.AbstractProducer;
 import com.jingsky.mv.maxwell.producer.NoneProducer;
-import com.jingsky.mv.maxwell.producer.ViewProducer;
-import com.jingsky.mv.maxwell.replication.*;
 import com.jingsky.mv.maxwell.schema.MysqlPositionStore;
 import com.jingsky.mv.maxwell.schema.PositionStoreThread;
 import com.jingsky.mv.maxwell.schema.ReadOnlyMysqlPositionStore;
@@ -342,7 +338,6 @@ public class MaxwellContext {
 		} else {
 			switch ( this.config.producerType ) {
 			case "view":
-				this.producer = new ViewProducer(this);
 				break;
 			case "none":
 				this.producer = new NoneProducer(this);

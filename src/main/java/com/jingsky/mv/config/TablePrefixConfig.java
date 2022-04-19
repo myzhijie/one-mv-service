@@ -1,6 +1,7 @@
 package com.jingsky.mv.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -9,10 +10,18 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @Slf4j
 public class TablePrefixConfig {
+    //maxwell用到的表前缀
+    private static String tablePrefix;
 
     public static String getTablePrefix(){
-        return "t_mv_";
+        return tablePrefix;
     }
+
+    @Value("${maxwell.tablePrefix}")
+    public static void setTablePrefix(String tablePrefix){
+        TablePrefixConfig.tablePrefix=tablePrefix;
+    }
+
 
     public static Integer getClientId(){
         return sumStrAscii(getTablePrefix());

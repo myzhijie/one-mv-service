@@ -1,7 +1,6 @@
 package com.jingsky.mv.util.exception;
 
 import com.jingsky.mv.maxwell.row.RowMap;
-import com.jingsky.mv.vo.View;
 import lombok.Data;
 
 /**
@@ -9,12 +8,10 @@ import lombok.Data;
  */
 @Data
 public class BootstrapException extends Exception{
-    private View view;
     private RowMap rowMap;
 
-    public BootstrapException(View view, RowMap rowMap, Exception exception){
+    public BootstrapException(RowMap rowMap, Exception exception){
         super(exception);
-        this.view = view;
         this.rowMap=rowMap;
     }
 }

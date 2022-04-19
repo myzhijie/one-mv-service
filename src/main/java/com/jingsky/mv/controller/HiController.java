@@ -1,7 +1,5 @@
 package com.jingsky.mv.controller;
 
-import com.jingsky.mv.config.DatasourceConfig;
-import com.jingsky.mv.config.ViewsConfig;
 import com.jingsky.mv.util.DatabaseService;
 import com.jingsky.mv.util.Response;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +13,6 @@ public class HiController {
     private String applicationName;
     @Autowired
     DatabaseService fromDatabaseService;
-    @Autowired
-    private ViewsConfig viewsConfig;
     @Value("${spring.hikari.from.username}")
     private String username;
 

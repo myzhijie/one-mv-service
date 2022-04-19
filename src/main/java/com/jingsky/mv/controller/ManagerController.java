@@ -1,17 +1,11 @@
 package com.jingsky.mv.controller;
 
-import com.jingsky.mv.config.ViewsConfig;
 import com.jingsky.mv.service.ConfigService;
 import com.jingsky.mv.service.JobService;
 import com.jingsky.mv.util.Response;
-import com.jingsky.mv.vo.View;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 同步管理Controller
@@ -22,26 +16,7 @@ public class ManagerController {
     @Autowired
     private JobService jobService;
     @Autowired
-    private ViewsConfig viewsConfig;
-    @Autowired
     private ConfigService configService;
-
-    /**
-     * 打印传输的信息
-     * @return
-     * @throws Exception
-     */
-    @RequestMapping("configInfo")
-    public Response configInfo() throws Exception {
-        Map<String,Object> result=new HashMap<>();
-
-        List<View> viewList=viewsConfig.getViews();
-        result.put("viewList",viewList);
-        for(View view : viewList){
-            result.put(view.getMvName()+" CreateViewSql",configService.makeCreateViewSql(view));
-        }
-        return new Response(result);
-    }
 
     /**
      * 终止同步任务
